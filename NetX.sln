@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31903.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetX", "NetX\NetX.csproj", "{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{83780E36-62A4-4496-9CBF-AE7106C79B0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerClientSample", "samples\ServerClientSample\ServerClientSample.csproj", "{D01619AB-2D55-45B0-9310-D9546E346A1B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D01619AB-2D55-45B0-9310-D9546E346A1B} = {83780E36-62A4-4496-9CBF-AE7106C79B0C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A9F73DC7-58C5-46FC-A137-7FA09E691B55}
+	EndGlobalSection
+EndGlobal

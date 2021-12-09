@@ -12,12 +12,16 @@ namespace NetX.Options
             bool noDelay, 
             int recvBufferSize, 
             int sendBufferSize, 
-            bool useCompletion) : base(
+            bool duplex,
+            int duplexTimeout,
+            bool copyBuffer) : base(
                 endPoint, 
                 noDelay, 
                 recvBufferSize, 
                 sendBufferSize, 
-                useCompletion)
+                duplex,
+                duplexTimeout,
+                copyBuffer)
         {
             Processor = processor;
         }

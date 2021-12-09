@@ -9,19 +9,25 @@ namespace NetX.Options
         public int RecvBufferSize { get; set; }
         public int SendBufferSize { get; set; }
         public bool Duplex { get; set; }
+        public int DuplexTimeout { get; set; }
+        public bool CopyBuffer { get; set; }
 
         public NetXConnectionOptions(
             IPEndPoint endPoint,
             bool noDelay,
             int recvBufferSize,
             int sendBufferSize,
-            bool useCompletion)
+            bool duplex,
+            int duplexTimeout,
+            bool copyBuffer)
         {
             EndPoint = endPoint;
             NoDelay = noDelay;
             RecvBufferSize = recvBufferSize;
             SendBufferSize = sendBufferSize;
-            Duplex = useCompletion;
+            Duplex = duplex;
+            DuplexTimeout = duplexTimeout;
+            CopyBuffer = copyBuffer;
         }
     }
 }

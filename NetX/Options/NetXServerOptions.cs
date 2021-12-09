@@ -6,6 +6,7 @@ namespace NetX.Options
     {
         public INetXServerProcessor Processor { get; }
         public bool UseProxy { get; }
+        public int Backlog { get; }
 
         public NetXServerOptions(
             INetXServerProcessor processor,
@@ -13,16 +14,22 @@ namespace NetX.Options
             bool noDelay, 
             int recvBufferSize, 
             int sendBufferSize, 
-            bool useCompletion,
-            bool useProxy) : base(
+            bool duplex,
+            int duplexTimeout,
+            bool copyBuffer,
+            bool useProxy,
+            int backLog) : base(
                 endPoint, 
                 noDelay, 
                 recvBufferSize, 
                 sendBufferSize, 
-                useCompletion)
+                duplex,
+                duplexTimeout,
+                copyBuffer)
         {
             Processor = processor;
             UseProxy = useProxy;
+            Backlog = backLog;
         }
     }
 }

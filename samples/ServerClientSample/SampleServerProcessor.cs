@@ -1,44 +1,43 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
 using NetX;
 
 namespace ServerClientSample
 {
-    public class SampleServerProcessor : NetXServerProcessor<SampleSession>
+    public class SampleServerProcessor : INetXServerProcessor
     {
-        public override SampleSession CreateSession(Guid sessionId, IPAddress remoteAddress)
+        public Task OnSessionConnectAsync(INetXSession session)
         {
-            var session = new SampleSession
-            {
-                Teste = "Isso é um teste"
-            };
+            Console.WriteLine($"[SERVER] Session {session.Id} connected. Time = {session.ConnectionTime} Address = {session.RemoteAddress}");
 
-            return session;
+            return Task.CompletedTask;
         }
 
-        protected override void ProcessReceivedBuffer(SampleSession session, in ArraySegment<byte> buffer)
+        public Task OnSessionDisconnectAsync(Guid sessionId)
         {
-            Console.WriteLine($"[SERVER] Processing received buffer");
+            Console.WriteLine($"[SERVER] Session {sessionId} disconnected");
+
+            return Task.CompletedTask;
         }
 
-        protected override void OnReceivedMessage(SampleSession session, in NetXMessage message)
+        public Task OnReceivedMessageAsync(INetXSession session, NetXMessage message)
         {
-            Console.WriteLine($"[SERVER] Received MessageId = {message.Id}, Length = {message.Buffer.Count}");
-            Console.WriteLine("[SERVER] Replying to client");
+            Console.WriteLine($"[SERVER] Received message from {session.Id}");
 
-            var receivedMessage = message;
-
-            Task.Run(async () =>
-            {
-                var response = await session.RequestAsync(receivedMessage.Buffer);
-                await session.ReplyAsync(receivedMessage.Id, response);
-            }); 
+            return Task.CompletedTask;
         }
 
-        protected override void ProcessSendBuffer(SampleSession session, in ArraySegment<byte> buffer)
+        public int GetReceiveMessageSize(INetXSession session, in ArraySegment<byte> buffer)
         {
-            Console.WriteLine($"[SERVER] Processing send buffer");
+            return 4;
+        }
+
+        public void ProcessReceivedBuffer(INetXSession session, in ArraySegment<byte> buffer)
+        {
+        }
+
+        public void ProcessSendBuffer(INetXSession session, in ArraySegment<byte> buffer)
+        {
         }
     }
 }

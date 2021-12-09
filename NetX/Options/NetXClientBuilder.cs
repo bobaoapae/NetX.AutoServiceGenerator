@@ -36,7 +36,9 @@ namespace NetX.Options
                 _noDelay,
                 _recvBufferSize,
                 _sendBufferSize,
-                _useCompletion);
+                _duplex,
+                _duplexTimeout,
+                _copyBuffer);
 
             return new NetXClient(options);
         }

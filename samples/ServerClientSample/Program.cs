@@ -2,7 +2,9 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetX.Options;
+using Serilog;
 
 namespace ServerClientSample
 {
@@ -12,17 +14,25 @@ namespace ServerClientSample
         {
             var cancellationTokenSource = new CancellationTokenSource();
 
-            var server = NetXServerBuilder.Create()
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Is(Serilog.Events.LogEventLevel.Verbose)
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}> {Message:l}{NewLine}{Exception}")
+                .CreateLogger();
+
+            var loggerFactory = new LoggerFactory()
+                .AddSerilog(Log.Logger);
+
+            var server = NetXServerBuilder.Create(loggerFactory)
                 .Processor<SampleServerProcessor>()
                 .EndPoint("0.0.0.0", 38101)
                 .Duplex(true)
+                .CopyBuffer(false)
                 .NoDelay(true)
                 .ReceiveBufferSize(1024)
                 .SendBufferSize(1024)
                 .Build();
 
             server.Listen(cancellationTokenSource.Token);
-            Console.WriteLine("Server started");
 
             var client = NetXClientBuilder.Create()
                 .Processor<SampleClientProcessor>()
@@ -34,12 +44,6 @@ namespace ServerClientSample
                 .Build();
 
             await client.ConnectAsync(cancellationTokenSource.Token);
-            Console.WriteLine("Client connected");
-
-            await Task.Delay(100);
-
-            var responseBytes = await client.RequestAsync(Encoding.UTF8.GetBytes("Requisicao 1"));
-            var response = Encoding.UTF8.GetString(responseBytes);
 
             while (!cancellationTokenSource.IsCancellationRequested)
             {
@@ -53,6 +57,8 @@ namespace ServerClientSample
 
                 await Task.Yield();
             }
+
+            await Task.Delay(3000);
         }
     }
 }

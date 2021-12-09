@@ -5,21 +5,34 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetX.Options;
 
 namespace NetX
 {
     public class NetXServer : INetXServer
     {
-        private Socket _socket;
-
+        private readonly ILogger _logger;
+        private readonly Socket _socket;
         private readonly NetXServerOptions _options;
         private readonly ConcurrentDictionary<Guid, INetXSession> _sessions;
+        private readonly List<Task> _sessionTasks;
 
-        internal NetXServer(NetXServerOptions options)
+        internal NetXServer(NetXServerOptions options, ILoggerFactory loggerFactory = null, string serverName = null)
         {
+            _logger = loggerFactory?.CreateLogger($"{nameof(NetXServer)}{(serverName != null ? $".{serverName}" : "")}");
+
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            {
+                NoDelay = options.NoDelay,
+                LingerState = new LingerOption(true, 5)
+            };
+
+            _socket.Bind(options.EndPoint);
+
             _options = options;
             _sessions = new ConcurrentDictionary<Guid, INetXSession>();
+            _sessionTasks = new List<Task>();
         }
 
         public bool TryGetSession(Guid sessionId, out INetXSession session)
@@ -34,13 +47,9 @@ namespace NetX
 
         public void Listen(CancellationToken cancellationToken = default)
         {
-            _socket = new Socket(SocketType.Stream, ProtocolType.Tcp)
-            {
-                NoDelay = _options.NoDelay
-            };
+            _socket.Listen(_options.Backlog);
 
-            _socket.Bind(_options.EndPoint);
-            _socket.Listen();
+            _logger?.LogInformation("tcp server listening on {ip}:{port}", _options.EndPoint.Address, _options.EndPoint.Port);
 
             _ = StartAcceptAsync(cancellationToken);
         }
@@ -52,50 +61,61 @@ namespace NetX
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var sessionSocket = await _socket.AcceptAsync(cancellationToken);
-                    sessionSocket.NoDelay = _options.NoDelay;
 
-                    _ = ProcessSessionConnection(sessionSocket, cancellationToken);
+                    var sessionTask = ProcessSessionConnection(sessionSocket, cancellationToken)
+                        .ContinueWith((task) => _sessionTasks.Remove(task));
+
+                    _sessionTasks.Add(sessionTask);
                 }
 
+                _logger?.LogInformation("Shutdown server");
+
                 _socket.Shutdown(SocketShutdown.Both);
-                _socket.Close();
+                _socket.Disconnect(true);
 
                 foreach (var session in _sessions.Values)
                     session.Disconnect();
+
+                await Task.WhenAll(_sessionTasks.ToArray());
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
             {
+                _logger?.LogCritical(ex, "An exception was throwed on server pipe");
             }
         }
 
         private async Task ProcessSessionConnection(Socket sessionSocket, CancellationToken cancellationToken)
         {
+            var remoteAddress = ((IPEndPoint)sessionSocket.RemoteEndPoint).Address.MapToIPv4();
+            if (_options.UseProxy)
+            {
+                using var stream = new NetworkStream(sessionSocket);
+                var proxyprotocol = new ProxyProtocol(stream, sessionSocket.RemoteEndPoint as IPEndPoint);
+                var realRemoteEndpoint = await proxyprotocol.GetRemoteEndpoint();
+                remoteAddress = realRemoteEndpoint.Address.MapToIPv4();
+            }
+
+            var session = new NetXSession(sessionSocket, remoteAddress, _options);
             try
             {
-                var sessionId = Guid.NewGuid();
-
-                var address = ((IPEndPoint)sessionSocket.RemoteEndPoint).Address.MapToIPv4();
-                if (_options.UseProxy)
+                if (_sessions.TryAdd(session.Id, session))
                 {
-                    using var stream = new NetworkStream(sessionSocket);
-                    var proxyprotocol = new ProxyProtocol(stream, sessionSocket.RemoteEndPoint as IPEndPoint);
-                    var realRemoteEndpoint = await proxyprotocol.GetRemoteEndpoint();
-                    address = realRemoteEndpoint.Address.MapToIPv4();
-                }
-
-                var session = (NetXSession)_options.Processor.CreateSession(sessionId, address);
-                if (session == null)
-                    throw new Exception("Created session is null");
-
-                if (_sessions.TryAdd(sessionId, session))
-                {
-                    await session.ProcessConnection(sessionSocket, _options, cancellationToken);
+                    await _options.Processor.OnSessionConnectAsync(session);
+                    await session.ProcessConnection(cancellationToken);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _logger?.LogError(ex, "An exception was throwed on Session {sessId}", session.Id);
             }
+            finally
+            {
+                _sessions.Remove(session.Id, out _);
+                await _options.Processor.OnSessionDisconnectAsync(session.Id);
+            }
+
+            sessionSocket.Close(1);
         }
     }
 }

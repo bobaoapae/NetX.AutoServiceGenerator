@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Net;
 
 namespace NetX
 {
     public abstract class NetXServerProcessor<TSession> : INetXServerProcessor
         where TSession : NetXSession
     {
-        INetXSession ISessionFactory<INetXSession>.CreateSession()
-            => CreateSession();
+        INetXSession ISessionFactory<INetXSession>.CreateSession(Guid sessionId, IPAddress remoteAddress)
+            => CreateSession(sessionId, remoteAddress);
 
-        public abstract TSession CreateSession();
+        public abstract TSession CreateSession(Guid sessionId, IPAddress remoteAddress);
 
         public int GetReceiveMessageSize(INetXSession session, in ArraySegment<byte> buffer)
             => GetReceiveMessageSize((TSession)session, in buffer);

@@ -2,5 +2,6 @@
 {
     public interface INetXServerOptionsBuilder : INetXConnectionOptionsBuilder<INetXServer>
     {
+        INetXServerOptionsBuilder UseProxy(bool useProxy);
     }
 }

@@ -5,6 +5,7 @@ namespace NetX.Options
     public class NetXServerBuilder : NetXConnectionOptionsBuilder<INetXServer>, INetXServerOptionsProcessorBuilder, INetXServerOptionsBuilder
     {
         private INetXServerProcessor _processor;
+        private bool _useProxy;
         
         private NetXServerBuilder()
         {
@@ -28,6 +29,12 @@ namespace NetX.Options
             return this;
         }
 
+        public INetXServerOptionsBuilder UseProxy(bool useProxy)
+        {
+            _useProxy = useProxy;
+            return this;
+        }
+
         public override INetXServer Build()
         {
             var options = new NetXServerOptions(
@@ -36,7 +43,8 @@ namespace NetX.Options
                 _noDelay, 
                 _recvBufferSize, 
                 _sendBufferSize, 
-                _useCompletion);
+                _useCompletion,
+                _useProxy);
 
             return new NetXServer(options);
         }

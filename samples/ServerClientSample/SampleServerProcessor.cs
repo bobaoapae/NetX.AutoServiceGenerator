@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Text;
+using System.Net;
 using System.Threading.Tasks;
 using NetX;
 
@@ -7,7 +7,7 @@ namespace ServerClientSample
 {
     public class SampleServerProcessor : NetXServerProcessor<SampleSession>
     {
-        public override SampleSession CreateSession()
+        public override SampleSession CreateSession(Guid sessionId, IPAddress remoteAddress)
         {
             var session = new SampleSession
             {

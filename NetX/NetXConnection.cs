@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System;
 using NetX.Options;
 using System.Collections.Concurrent;
+using System.IO;
 
 namespace NetX
 {
@@ -61,6 +62,34 @@ namespace NetX
             }
         }
 
+        public async ValueTask SendAsync(Stream stream)
+        {
+            Monitor.Enter(_sendSync);
+            try
+            {
+                stream.Position = 0;
+
+                _sendPipe.Writer.Write(BitConverter.GetBytes((int)stream.Length + (_options.Duplex ? sizeof(int) + GUID_LEN : 0)));
+
+                if (_options.Duplex)
+                {
+                    _sendPipe.Writer.Write(_emptyGuid);
+                }
+
+                Memory<byte> memory = _sendPipe.Writer.GetMemory((int)stream.Length);
+                int bytesRead = await stream.ReadAsync(memory);
+                if (bytesRead != 0)
+                {
+                    _sendPipe.Writer.Advance(bytesRead);
+                    _ = await _sendPipe.Writer.FlushAsync();
+                }
+            }
+            finally
+            {
+                Monitor.Exit(_sendSync);
+            }
+        }
+
         public async ValueTask<ArraySegment<byte>> RequestAsync(ArraySegment<byte> buffer)
         {
             if (!_options.Duplex)
@@ -92,6 +121,38 @@ namespace NetX
             return await _completions[messageId].Task;
         }
 
+        public async ValueTask<ArraySegment<byte>> RequestAsync(Stream stream)
+        {
+            if (!_options.Duplex)
+                throw new NotSupportedException($"Cannot use RequestAsync with {nameof(_options.Duplex)} option disabled");
+
+            var messageId = Guid.NewGuid();
+            if (!_completions.TryAdd(messageId, new TaskCompletionSource<ArraySegment<byte>>()))
+                throw new Exception($"Cannot track completion for MessageId = {messageId}");
+
+            Monitor.Enter(_sendSync);
+            try
+            {
+                _sendPipe.Writer.Write(BitConverter.GetBytes((int)stream.Length + sizeof(int) + GUID_LEN));
+
+                _sendPipe.Writer.Write(messageId.ToByteArray());
+
+                Memory<byte> memory = _sendPipe.Writer.GetMemory((int)stream.Length);
+                int bytesRead = await stream.ReadAsync(memory);
+                if (bytesRead != 0)
+                {
+                    _sendPipe.Writer.Advance(bytesRead);
+                    _ = await _sendPipe.Writer.FlushAsync();
+                }
+            }
+            finally
+            {
+                Monitor.Exit(_sendSync);
+            }
+
+            return await _completions[messageId].Task;
+        }
+
         public async ValueTask ReplyAsync(Guid messageId, ArraySegment<byte> buffer)
         {
             if (!_options.Duplex)
@@ -110,6 +171,32 @@ namespace NetX
                 _sendPipe.Writer.Advance(buffer.Count);
 
                 await _sendPipe.Writer.FlushAsync();
+            }
+            finally
+            {
+                Monitor.Exit(_sendSync);
+            }
+        }
+
+        public async ValueTask ReplyAsync(Guid messageId, Stream stream)
+        {
+            if (!_options.Duplex)
+                throw new NotSupportedException($"Cannot use ReplyAsync with {nameof(_options.Duplex)} option disabled");
+
+            Monitor.Enter(_sendSync);
+            try
+            {
+                _sendPipe.Writer.Write(BitConverter.GetBytes((int)stream.Length + sizeof(int) + GUID_LEN));
+
+                _sendPipe.Writer.Write(messageId.ToByteArray());
+
+                Memory<byte> memory = _sendPipe.Writer.GetMemory((int)stream.Length);
+                int bytesRead = await stream.ReadAsync(memory);
+                if (bytesRead != 0)
+                {
+                    _sendPipe.Writer.Advance(bytesRead);
+                    _ = await _sendPipe.Writer.FlushAsync();
+                }
             }
             finally
             {

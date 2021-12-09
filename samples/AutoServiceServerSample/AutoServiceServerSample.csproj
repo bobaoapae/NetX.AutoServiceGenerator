@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false" Include="..\..\NetX.AutoServiceGenerator\NetX.AutoServiceGenerator.csproj" />
+        <ProjectReference Include="..\AutoServiceServerSample.Definitions\AutoServiceServerSample.Definitions.csproj" />
+        <ProjectReference Include="..\..\NetX\NetX.csproj" />
+    </ItemGroup>
+
+</Project>

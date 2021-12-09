@@ -208,5 +208,16 @@ namespace NetX.AutoServiceGenerator.Definitions
             buffer.Read(ref offset, out int arrayLen);
             buffer.Read(ref offset, arrayLen, out value);
         }
+
+        public static void Read(this ArraySegment<byte> buffer, ref int offset, out string[] value)
+        {
+            buffer.Read(ref offset, out int arrayLen);
+            value = new string[arrayLen];
+            for (int i = 0; i < arrayLen; i++)
+            {
+                buffer.Read(ref offset, out string val);
+                value[i] = val;
+            }
+        }
     }
 }

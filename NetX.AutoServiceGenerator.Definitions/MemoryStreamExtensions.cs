@@ -129,11 +129,6 @@ namespace NetX.AutoServiceGenerator.Definitions
                 stream.Skip(in rest);
         }
 
-        public static void Write(this MemoryStream stream, byte[] value)
-        {
-            
-        }
-
         public static void Write(this MemoryStream stream, Guid guid)
         {
             var bytes = guid.ToByteArray();
@@ -145,6 +140,105 @@ namespace NetX.AutoServiceGenerator.Definitions
         {
             stream.Write(value.Length);
             stream.Write(value, value.Length);
+        }
+
+        public static void Write(this MemoryStream stream, string[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, bool[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, byte[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, sbyte[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, short[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, ushort[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, int[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, uint[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, long[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, ulong[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
+        }
+
+        public static void Write(this MemoryStream stream, float[] value)
+        {
+            stream.Write(value.Length);
+            foreach (var s in value)
+            {
+                stream.Write(s);
+            }
         }
     }
 }

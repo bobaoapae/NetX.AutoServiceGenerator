@@ -19,7 +19,7 @@ public class AutoServiceClientSampleConsumer : IAutoServiceClientSample
     
     public async Task<bool> ReceiveLink(ushort value)
     {
-        var stream = (RecyclableMemoryStream)_streamManager.GetStream("AutoServiceClientConsumer_1_0_TryDoSomething", 4096, true);
+        var stream = _streamManager.GetStream("AutoServiceClientConsumer_1_0_TryDoSomething", 4096, true);
         try
         {
             stream.Write(Convert.ToUInt16(1));

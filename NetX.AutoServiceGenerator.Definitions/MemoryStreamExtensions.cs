@@ -129,6 +129,11 @@ namespace NetX.AutoServiceGenerator.Definitions
                 stream.Skip(in rest);
         }
 
+        public static void Write(this MemoryStream stream, byte[] value)
+        {
+            
+        }
+
         public static void Write(this MemoryStream stream, Guid guid)
         {
             var bytes = guid.ToByteArray();

@@ -133,6 +133,7 @@ namespace NetX
             Monitor.Enter(_sendSync);
             try
             {
+                stream.Position = 0;
                 _sendPipe.Writer.Write(BitConverter.GetBytes((int)stream.Length + sizeof(int) + GUID_LEN));
 
                 _sendPipe.Writer.Write(messageId.ToByteArray());
@@ -186,6 +187,7 @@ namespace NetX
             Monitor.Enter(_sendSync);
             try
             {
+                stream.Position = 0;
                 _sendPipe.Writer.Write(BitConverter.GetBytes((int)stream.Length + sizeof(int) + GUID_LEN));
 
                 _sendPipe.Writer.Write(messageId.ToByteArray());

@@ -4,19 +4,24 @@ using AutoServiceServerSample.Definitions;
 using NetX;
 using NetX.AutoServiceGenerator.Definitions;
 using NetX.Options;
+using System;
 
 namespace AutoServiceServerSample;
 
-public partial class AutoServiceManager
+public partial class AutoServiceServerManager
 {
-    private readonly RecyclableMemoryStreamManager manager;
-    public static AutoServiceManager I = new();
 
+    private readonly RecyclableMemoryStreamManager manager;
+
+    private string _address;
+    private ushort _port;
     private INetXServer _netXServer;
     private AutoServiceManagerProcessor _processor;
 
-    public AutoServiceManager()
+    public AutoServiceServerManager(string address, ushort port)
     {
+        _address = address;
+        _port = port;
         int blockSize = 1024;
         int largeBufferMultiple = 1024 * 1024;
         int maxBufferSize = 16 * largeBufferMultiple;
@@ -26,27 +31,32 @@ public partial class AutoServiceManager
             MaximumFreeSmallPoolBytes = blockSize * 2048,
             MaximumFreeLargePoolBytes = maxBufferSize * 4
         };
-        
-        AutoServiceSample = new AutoServiceSample(this);
-    }
-
-    public void StartListening(string address, ushort port, CancellationToken cancellationToken)
-    {
-        _processor = new AutoServiceManagerProcessor(this, manager);
+        _processor = new AutoServiceManagerProcessor(this, manager, TryGetSession);
         _netXServer = NetXServerBuilder.Create()
             .Processor(_processor)
-            .EndPoint(address, port)
+            .EndPoint(_address, _port)
             .Duplex(true)
             .NoDelay(true)
             .ReceiveBufferSize(1024)
             .SendBufferSize(1024)
             .Build();
+    }
+
+    public void StartListening(CancellationToken cancellationToken)
+    {
         _netXServer.Listen(cancellationToken);
     }
-    
-    #region ServiceProviders
 
-    public IAutoServiceSample AutoServiceSample { get; }
+    private bool TryGetSession(Guid guid, out AutoServiceServerManagerSession session)
+    {
+        if(_netXServer.TryGetSession(guid, out var iSession))
+        {
+            session = (AutoServiceServerManagerSession)iSession;
+            return true;
+        }
 
-    #endregion
+        session = null;
+
+        return false;
+    }
 }

@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AutoServiceClientSample.Definitions;
 using AutoServiceServerSample.Definitions;
 using NetX.AutoServiceGenerator.Definitions;
 using Microsoft.IO;
+using NetX;
 
-namespace AutoServiceServerSample;
+namespace AutoServiceClientSample;
 
-public class AutoServiceSampleConsumer : IAutoServiceSample
+public class AutoServiceServerSampleConsumer : IAutoServiceServerSample
 {
-
-    private AutoServiceManagerSession _session;
+    private INetXClient _client;
     private RecyclableMemoryStreamManager _streamManager;
 
-    public AutoServiceSampleConsumer(AutoServiceManagerSession session, RecyclableMemoryStreamManager streamManager)
+    public AutoServiceServerSampleConsumer(INetXClient client, RecyclableMemoryStreamManager streamManager)
     {
-        _session = session;
+        _client = client;
         _streamManager = streamManager;
     }
-    
-    public async Task<bool> TryDoSomething(string value, int value2, short value3, bool value5, byte[] value6)
+
+    public async Task<bool> TryDoSomething(string value, int value2, short value3, bool value5)
     {
-        var stream = (RecyclableMemoryStream)_streamManager.GetStream("AutoServiceSample_0_0_TryDoSomething", 4096, true);
+        var stream = (RecyclableMemoryStream)_streamManager.GetStream("AutoServiceServerSampleConsumer_0_0_TryDoSomething", 4096, true);
         try
         {
             stream.Write(Convert.ToUInt16(0));
@@ -30,9 +31,8 @@ public class AutoServiceSampleConsumer : IAutoServiceSample
             stream.Write(value2);
             stream.Write(value3);
             stream.Write(value5);
-            stream.Write(value6);
 
-            var autoServiceSample_0_0_TryDoSomething_Buffer_Result = await _session.RequestAsync(stream);
+            var autoServiceSample_0_0_TryDoSomething_Buffer_Result = await _client.RequestAsync(stream);
             var autoServiceSample_0_0_TryDoSomething_Buffer_Result_Offset = autoServiceSample_0_0_TryDoSomething_Buffer_Result.Offset;
             
             autoServiceSample_0_0_TryDoSomething_Buffer_Result.Read(ref autoServiceSample_0_0_TryDoSomething_Buffer_Result_Offset, out bool autoServiceSample_0_0_TryDoSomething_Result);
@@ -50,7 +50,7 @@ public class AutoServiceSampleConsumer : IAutoServiceSample
         }
     }
 
-    public Task DoSomething(Guid guid)
+    public Task DoSomethingWithSession()
     {
         throw new NotImplementedException();
     }

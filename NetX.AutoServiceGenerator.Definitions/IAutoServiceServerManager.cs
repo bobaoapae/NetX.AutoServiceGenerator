@@ -1,6 +1,6 @@
 ﻿namespace NetX.AutoServiceGenerator.Definitions
 {
-    public interface IAutoServiceManager
+    public interface IAutoServiceServerManager
     {
         
     }

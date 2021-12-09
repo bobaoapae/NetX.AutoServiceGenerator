@@ -10,7 +10,7 @@ namespace AutoServiceServerSample;
 public class AutoServiceServerManagerSession : NetXSession
 {
     private RecyclableMemoryStreamManager _streamManager;
-    public IAutoServiceClientSample AutoServiceSample { get; }
+    public IAutoServiceClientSample AutoServiceClientSample { get; }
 
     public AutoServiceServerManagerSession(Guid guid, IPAddress ipAddress, RecyclableMemoryStreamManager streamManager)
     {
@@ -18,7 +18,7 @@ public class AutoServiceServerManagerSession : NetXSession
 
         #region InitializeServices
 
-        AutoServiceSample = new AutoServiceClientSampleConsumer(this, streamManager);
+        AutoServiceClientSample = new AutoServiceClientSampleConsumer(this, streamManager);
 
         #endregion
     }

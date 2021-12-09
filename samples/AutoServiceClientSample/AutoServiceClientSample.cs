@@ -8,7 +8,7 @@ public partial class AutoServiceClientSample : IAutoServiceClientSample
 {
     public Task<bool> ReceiveLink(ushort value)
     {
-        Console.WriteLine($"Receive Link: {value}");
+        Console.WriteLine($"Invoked Service AutoServiceClientSample.ReceiveLink({value});");
 
         return Task.FromResult(value == 45);
     }

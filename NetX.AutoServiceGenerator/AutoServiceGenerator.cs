@@ -189,7 +189,7 @@ namespace NetX.AutoServiceGenerator
                     autoServiceServerManagerSessionSourceUsings.AppendLine($"using {autoServiceClientConsumerInterface.ContainingNamespace};");
                 }
                 
-                autoServiceClientConsumerDeclarations.Append('\t', 1).AppendLine($"{autoServiceClientConsumerInterface.Name} {autoServiceClientConsumerInterface.Name.Substring(1)} {{ get; }}");
+                autoServiceClientConsumerDeclarations.Append('\t', 1).AppendLine($"public {autoServiceClientConsumerInterface.Name} {autoServiceClientConsumerInterface.Name.Substring(1)} {{ get; }}");
                 autoServicesClientConsumerInitializations.Append('\t', 2).AppendLine($"{autoServiceClientConsumerInterface.Name.Substring(1)} = new {autoServiceClientConsumerInterface.Name.Substring(1)}ClientConsumer(this, streamManager);");
 
                 var serviceImplementations = new StringBuilder();

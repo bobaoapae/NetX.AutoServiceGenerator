@@ -21,10 +21,10 @@ public class AutoServiceServerSampleConsumer : IAutoServiceServerSample
 
     public async Task<bool> TryDoSomething(string value, int value2, short value3, bool value5)
     {
-        var stream = (RecyclableMemoryStream)_streamManager.GetStream("AutoServiceServerSampleConsumer_0_0_TryDoSomething", 4096, true);
+        var stream = (RecyclableMemoryStream)_streamManager.GetStream("IAutoServiceServerSample_TryDoSomething", 4096, true);
         try
         {
-            stream.Write(Convert.ToUInt16(0));
+            stream.Write("IAutoServiceServerSample");
             stream.Write(Convert.ToUInt16(0));
             
             stream.Write(value);

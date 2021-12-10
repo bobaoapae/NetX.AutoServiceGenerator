@@ -3,7 +3,8 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceServerSample.Definitions;
 
-public interface IAutoServiceServerSample : IAutoService
+[AutoService]
+public interface IAutoServiceServerSample
 {
     Task<bool> TryDoSomething(string value, int value2, short value3, bool value5);
 }

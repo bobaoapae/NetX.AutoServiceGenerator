@@ -3,7 +3,8 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceClientSample.Definitions;
 
-public interface IAutoServiceClientSample : IAutoService
+[AutoService]
+public interface IAutoServiceClientSample
 {
     Task<bool> ReceiveLink(ushort value);
 }

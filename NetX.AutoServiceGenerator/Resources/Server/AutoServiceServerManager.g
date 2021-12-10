@@ -1,37 +1,36 @@
-﻿using System.Threading;
-using Microsoft.IO;
-using AutoServiceServerSample.Definitions;
-using NetX;
-using NetX.AutoServiceGenerator.Definitions;
-using NetX.Options;
+﻿using NetX;
 using System;
+using NetX.Options;
+using Microsoft.IO;
+using System.Threading;
+using NetX.AutoServiceGenerator.Definitions;
 
-namespace AutoServiceServerSample;
+namespace {0};
 
-public partial class AutoServiceServerManager
-{
+public partial class {1}
+{{
 
     private readonly RecyclableMemoryStreamManager manager;
 
     private string _address;
     private ushort _port;
     private INetXServer _netXServer;
-    private AutoServiceManagerProcessor _processor;
+    private {1}Processor _processor;
 
-    public AutoServiceServerManager(string address, ushort port)
-    {
+    public {1}(string address, ushort port)
+    {{
         _address = address;
         _port = port;
         int blockSize = 1024;
         int largeBufferMultiple = 1024 * 1024;
         int maxBufferSize = 16 * largeBufferMultiple;
         manager = new Microsoft.IO.RecyclableMemoryStreamManager(blockSize, largeBufferMultiple, maxBufferSize)
-        {
+        {{
             AggressiveBufferReturn = true,
             MaximumFreeSmallPoolBytes = blockSize * 2048,
             MaximumFreeLargePoolBytes = maxBufferSize * 4
-        };
-        _processor = new AutoServiceManagerProcessor(this, manager);
+        }};
+        _processor = new {1}Processor(this, manager);
         _netXServer = NetXServerBuilder.Create()
             .Processor(_processor)
             .EndPoint(_address, _port)
@@ -41,10 +40,10 @@ public partial class AutoServiceServerManager
             .ReceiveBufferSize(1024)
             .SendBufferSize(1024)
             .Build();
-    }
+    }}
 
     public void StartListening(CancellationToken cancellationToken)
-    {
+    {{
         _netXServer.Listen(cancellationToken);
-    }
-}
+    }}
+}}

@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!--<ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false" Include="..\..\NetX.AutoServiceGenerator\NetX.AutoServiceGenerator.csproj" />-->
+        <ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false" Include="..\..\NetX.AutoServiceGenerator\NetX.AutoServiceGenerator.csproj" />
         <ProjectReference Include="..\AutoServiceServerSample.Definitions\AutoServiceServerSample.Definitions.csproj" />
         <ProjectReference Include="..\AutoServiceClientSample.Definitions\AutoServiceClientSample.Definitions.csproj" />
         <ProjectReference Include="..\..\NetX\NetX.csproj" />

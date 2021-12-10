@@ -15,6 +15,7 @@
     <ItemGroup>
         <EmbeddedResource Include="Resources\*" />
         <EmbeddedResource Include="Resources\Server\*" />
+        <EmbeddedResource Include="Resources\Client\*" />
     </ItemGroup>
 
 </Project>

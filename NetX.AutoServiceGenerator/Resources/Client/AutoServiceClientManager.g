@@ -1,44 +1,43 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.IO;
-using AutoServiceServerSample.Definitions;
-using NetX;
-using NetX.AutoServiceGenerator.Definitions;
-using NetX.Options;
+﻿using NetX;
 using System;
+using NetX.Options;
+using Microsoft.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using NetX.AutoServiceGenerator.Definitions;
 
-namespace AutoServiceClientSample;
+namespace {0};
 
-public partial class AutoServiceClientManager
-{
+public partial class {1}
+{{
 
     private readonly RecyclableMemoryStreamManager manager;
 
     private string _address;
     private ushort _port;
     private INetXClient _netXClient;
-    private AutoServiceClientManagerProcessor _processor;
+    private {1}Processor _processor;
 
     #region Services
 
-    public IAutoServiceServerSample AutoServiceServerSample { get; }
+ {2}
 
     #endregion
     
-    public AutoServiceClientManager(string address, ushort port)
-    {
+    public {1}(string address, ushort port)
+    {{
         _address = address;
         _port = port;
         int blockSize = 1024;
         int largeBufferMultiple = 1024 * 1024;
         int maxBufferSize = 16 * largeBufferMultiple;
         manager = new Microsoft.IO.RecyclableMemoryStreamManager(blockSize, largeBufferMultiple, maxBufferSize)
-        {
+        {{
             AggressiveBufferReturn = true,
             MaximumFreeSmallPoolBytes = blockSize * 2048,
             MaximumFreeLargePoolBytes = maxBufferSize * 4
-        };
-        _processor = new AutoServiceClientManagerProcessor(this, manager);
+        }};
+        _processor = new {1}Processor(this, manager);
         _netXClient = NetXClientBuilder.Create()
             .Processor(_processor)
             .EndPoint(_address, _port)
@@ -51,14 +50,14 @@ public partial class AutoServiceClientManager
 
         #region InitializeServices
 
-        AutoServiceServerSample = new AutoServiceServerSampleConsumer(_netXClient, manager);
+{3}
 
         #endregion
-    }
+    }}
 
     public Task ConnectAsync(CancellationToken cancellationToken)
-    {
+    {{
         return _netXClient.ConnectAsync(cancellationToken);
-    }
+    }}
 
-}
+}}

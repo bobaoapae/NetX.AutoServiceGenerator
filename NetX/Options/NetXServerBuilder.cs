@@ -14,6 +14,7 @@ namespace NetX.Options
         private NetXServerBuilder(ILoggerFactory loggerFactory, string serverName)
         {
             _loggerFactory = loggerFactory;
+            _serverName = serverName;
             _endpoint = new IPEndPoint(IPAddress.Any, 0);
             _useProxy = false;
             _backlog = 100;

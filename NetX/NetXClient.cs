@@ -3,14 +3,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using NetX.Options;
+using Microsoft.Extensions.Logging;
 
 namespace NetX
 {
     public class NetXClient : NetXConnection, INetXClient
     {
-        internal NetXClient(NetXClientOptions options)
+        private readonly ILogger _logger;
+        private readonly string _clientName;
+
+        internal NetXClient(NetXClientOptions options, ILoggerFactory loggerFactory = null, string clientName = null)
             : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), options)
         {
+            _logger = loggerFactory?.CreateLogger<NetXClient>();
+            _clientName = clientName ?? nameof(NetXClient);
             _socket.NoDelay = _options.NoDelay;
             _socket.LingerState = new LingerOption(true, 5);
         }
@@ -20,6 +26,8 @@ namespace NetX
             await _socket.ConnectAsync(_options.EndPoint, cancellationToken);
 
             await ((NetXClientOptions)_options).Processor.OnConnectedAsync(this);
+
+            _logger?.LogInformation("{name}: Tcp client connected to {address}:{port}", _clientName, _options.EndPoint.Address, _options.EndPoint.Port);
 
             _ = ProcessClientConnection(cancellationToken);
         }
@@ -32,7 +40,7 @@ namespace NetX
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[CLIENT EXCEPTION]: {ex}");
+                _logger?.LogCritical(ex, "{name}: An exception was throwed on process pipe", _clientName);
             }
             finally
             {

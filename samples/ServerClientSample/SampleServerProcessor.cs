@@ -8,22 +8,18 @@ namespace ServerClientSample
     {
         public Task OnSessionConnectAsync(INetXSession session)
         {
-            Console.WriteLine($"[SERVER] Session {session.Id} connected. Time = {session.ConnectionTime} Address = {session.RemoteAddress}");
+            Console.WriteLine($"Session {session.Id} connected. Time = {session.ConnectionTime} Address = {session.RemoteAddress}");
 
             return Task.CompletedTask;
         }
 
         public Task OnSessionDisconnectAsync(Guid sessionId)
         {
-            Console.WriteLine($"[SERVER] Session {sessionId} disconnected");
-
             return Task.CompletedTask;
         }
 
         public Task OnReceivedMessageAsync(INetXSession session, NetXMessage message)
         {
-            Console.WriteLine($"[SERVER] Received message from {session.Id}");
-
             return Task.CompletedTask;
         }
 

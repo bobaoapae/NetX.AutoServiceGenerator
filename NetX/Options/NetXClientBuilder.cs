@@ -1,19 +1,24 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace NetX.Options
 {
     public class NetXClientBuilder : NetXConnectionOptionsBuilder<INetXClient>, INetXClientOptionsProcessorBuilder, INetXClientOptionsBuilder
     {
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly string _clientName;
         private INetXClientProcessor _processor;
 
-        private NetXClientBuilder()
+        private NetXClientBuilder(ILoggerFactory loggerFactory = null, string clientName = null)
         {
+            _loggerFactory = loggerFactory;
+            _clientName = clientName;
             _endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5000);
         }
 
-        public static INetXClientOptionsProcessorBuilder Create()
+        public static INetXClientOptionsProcessorBuilder Create(ILoggerFactory loggerFactory = null, string clientName = null)
         {
-            return new NetXClientBuilder();
+            return new NetXClientBuilder(loggerFactory, clientName);
         }
 
         public INetXClientOptionsBuilder Processor(INetXClientProcessor processorInstance)
@@ -40,7 +45,7 @@ namespace NetX.Options
                 _duplexTimeout,
                 _copyBuffer);
 
-            return new NetXClient(options);
+            return new NetXClient(options, _loggerFactory, _clientName);
         }
     }
 }

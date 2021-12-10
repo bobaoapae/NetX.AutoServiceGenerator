@@ -13,6 +13,7 @@ namespace NetX
     public class NetXServer : INetXServer
     {
         private readonly ILogger _logger;
+        private readonly string _serverName;
         private readonly Socket _socket;
         private readonly NetXServerOptions _options;
         private readonly ConcurrentDictionary<Guid, INetXSession> _sessions;
@@ -20,7 +21,8 @@ namespace NetX
 
         internal NetXServer(NetXServerOptions options, ILoggerFactory loggerFactory = null, string serverName = null)
         {
-            _logger = loggerFactory?.CreateLogger($"{nameof(NetXServer)}{(serverName != null ? $".{serverName}" : "")}");
+            _logger = loggerFactory?.CreateLogger<NetXServer>();
+            _serverName = serverName ?? nameof(NetXServer);
 
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             {
@@ -49,7 +51,7 @@ namespace NetX
         {
             _socket.Listen(_options.Backlog);
 
-            _logger?.LogInformation("tcp server listening on {ip}:{port}", _options.EndPoint.Address, _options.EndPoint.Port);
+            _logger?.LogInformation("{svrName}: Tcp server listening on {ip}:{port}", _serverName, _options.EndPoint.Address, _options.EndPoint.Port);
 
             _ = StartAcceptAsync(cancellationToken);
         }
@@ -68,7 +70,7 @@ namespace NetX
                     _sessionTasks.Add(sessionTask);
                 }
 
-                _logger?.LogInformation("Shutdown server");
+                _logger?.LogInformation("{svrName}: Shutdown", _serverName);
 
                 _socket.Shutdown(SocketShutdown.Both);
                 _socket.Disconnect(true);
@@ -81,7 +83,7 @@ namespace NetX
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                _logger?.LogCritical(ex, "An exception was throwed on server pipe");
+                _logger?.LogCritical(ex, "{svrName}: An exception was throwed on listen pipe", _serverName);
             }
         }
 
@@ -107,7 +109,7 @@ namespace NetX
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "An exception was throwed on Session {sessId}", session.Id);
+                _logger?.LogError(ex, "{svrName}: An exception was throwed on Session {sessId}", _serverName, session.Id);
             }
             finally
             {

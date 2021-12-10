@@ -16,13 +16,13 @@ namespace ServerClientSample
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Is(Serilog.Events.LogEventLevel.Verbose)
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}> {Message:l}{NewLine}{Exception}")
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:l}{NewLine}{Exception}")
                 .CreateLogger();
 
             var loggerFactory = new LoggerFactory()
                 .AddSerilog(Log.Logger);
 
-            var server = NetXServerBuilder.Create(loggerFactory)
+            var server = NetXServerBuilder.Create(loggerFactory, "SampleServer")
                 .Processor<SampleServerProcessor>()
                 .EndPoint("0.0.0.0", 38101)
                 .Duplex(true)
@@ -34,7 +34,7 @@ namespace ServerClientSample
 
             server.Listen(cancellationTokenSource.Token);
 
-            var client = NetXClientBuilder.Create()
+            var client = NetXClientBuilder.Create(loggerFactory, "SampleClient")
                 .Processor<SampleClientProcessor>()
                 .EndPoint("127.0.0.1", 38101)
                 .Duplex(true)

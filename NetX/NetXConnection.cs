@@ -405,7 +405,7 @@ namespace NetX
 
             ProcessSendBuffer(in sendBuff);
 
-            var next = buffer.GetPosition(size);
+            var next = buffer.GetPosition(size + offset);
             buffer = buffer.Slice(next);
 
             return true;

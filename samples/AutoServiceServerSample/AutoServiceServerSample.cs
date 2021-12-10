@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoServiceServerSample.Definitions;
@@ -24,5 +25,18 @@ public partial class AutoServiceServerSample : IAutoServiceServerSample
 
         return result;
 
+    }
+
+    public Task<int[]> AppendValues(int value1, int value2, int value3, int[] value4)
+    {
+        Console.WriteLine($"Invoked Service AutoServiceServerSample.AppendValues({value1},{value2},{value3},[{string.Join(",", value4)}]);");
+
+        var result = new List<int>();
+        result.Add(value1);
+        result.Add(value2);
+        result.Add(value3);
+        result.AddRange(value4);
+
+        return Task.FromResult(result.ToArray());
     }
 }

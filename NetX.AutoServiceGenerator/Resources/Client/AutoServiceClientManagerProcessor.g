@@ -14,7 +14,7 @@ public class {1}Processor : INetXClientProcessor
 {{
     private delegate ValueTask InternalProxy(INetXClientSession client, NetXMessage message, int offset);
 
-    private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxys;
+    private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxies;
     
     private {1} _autoServiceManager;
     private RecyclableMemoryStreamManager _streamManager;
@@ -23,7 +23,7 @@ public class {1}Processor : INetXClientProcessor
     {{
         _autoServiceManager = autoServiceManager;
         _streamManager = streamManager;
-        _serviceProxys = new Dictionary<string, Dictionary<ushort, InternalProxy>>();
+        _serviceProxies = new Dictionary<string, Dictionary<ushort, InternalProxy>>();
         LoadProxys();
         InitializeServices();
     }}
@@ -57,7 +57,7 @@ public class {1}Processor : INetXClientProcessor
 
         Task.Run(async () =>
         {{
-            await _serviceProxys[interfaceCode][methodCode](client, message, offset);
+            await _serviceProxies[interfaceCode][methodCode](client, message, offset);
         }});
         return Task.CompletedTask;
     }}

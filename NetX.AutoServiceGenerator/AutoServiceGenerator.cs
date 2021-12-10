@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -43,11 +44,6 @@ namespace NetX.AutoServiceGenerator
                 return;
 
             #endregion
-
-#if DEBUG
-            if (!Debugger.IsAttached)
-                Debugger.Launch();
-#endif
 
             #region LoadDefinitions
 
@@ -111,9 +107,9 @@ namespace NetX.AutoServiceGenerator
 
             #region ValidateCorrectlyImplementation
 
-            var allImplementedServerServices = AutoServiceUtils.GetAllClassWithInterfaceWithAttribute(candidateClasses, autoServiceAttributeDefinition);
+            var allImplementedServices = AutoServiceUtils.GetAllClassWithInterfaceWithAttribute(candidateClasses, autoServiceAttributeDefinition);
 
-            foreach (var implementedServerService in allImplementedServerServices)
+            foreach (var implementedServerService in allImplementedServices)
             {
                 if (!AutoServiceUtils.CheckClassIsPartial(implementedServerService))
                 {
@@ -238,7 +234,7 @@ namespace NetX.AutoServiceGenerator
 
                         var autoServiceClientConsumerSource = string.Format(autoServiceClientConsumerResource, namespaceAutoServiceServerManager, autoServiceClientConsumerInterface.Name.Substring(1), autoServiceServerManagerName, autoServiceClientConsumerInterface.ContainingNamespace,
                             serviceImplementations);
-                        context.AddSource($"{autoServiceClientConsumerInterface.Name.Substring(1)}Consumer.g.cs", SourceText.From(autoServiceClientConsumerSource, Encoding.UTF8));
+                        context.AddSource($"{autoServiceClientConsumerInterface.Name.Substring(1)}ClientConsumer.g.cs", SourceText.From(autoServiceClientConsumerSource, Encoding.UTF8));
                     }
 
                     var autoServiceServerManagerSessionSource = string.Format(autoServiceServerManagerSessionResource, namespaceAutoServiceServerManager, autoServiceServerManagerName, autoServiceClientConsumerDeclarations, autoServicesClientConsumerInitializations,
@@ -253,7 +249,7 @@ namespace NetX.AutoServiceGenerator
                     var autoServiceServerProcessorLoaders = new StringBuilder();
                     var autoServiceServerProcessorProxies = new StringBuilder();
 
-                    foreach (var implementedServerService in allImplementedServerServices)
+                    foreach (var implementedServerService in allImplementedServices)
                     {
                         var interfaceServer = implementedServerService.Interfaces[0];
 
@@ -334,6 +330,11 @@ namespace NetX.AutoServiceGenerator
 
             if (autoServiceClientManagers.Count == 1)
             {
+#if DEBUG
+            if (!Debugger.IsAttached)
+                Debugger.Launch();
+#endif
+                
                 var autoServiceClientManager = autoServiceClientManagers[0];
 
                 if (!AutoServiceUtils.CheckClassIsPartial(autoServiceClientManager))
@@ -349,6 +350,137 @@ namespace NetX.AutoServiceGenerator
                         autoServiceClientManager.Locations[0]));
                     return;
                 }
+                
+                var namespaceAutoServiceClientManager = autoServiceClientManager.ContainingNamespace.ToDisplayString();
+                var autoServiceClientManagerName = autoServiceClientManager.Name;
+                
+                var autoServiceServerConsumerInterfaces = new List<INamedTypeSymbol>();
+
+                foreach (var attributeData in autoServiceClientManager.GetAttributes())
+                {
+                    if (attributeData.AttributeClass?.Name == autoServiceConsumerAttributeDefinition.Name)
+                    {
+                        autoServiceServerConsumerInterfaces.Add((INamedTypeSymbol)attributeData.ConstructorArguments[0].Value);
+                    }
+                }
+                
+                var autoServicesServerConsumerInitializations = new StringBuilder();
+                var autoServiceServerConsumerDeclarations = new StringBuilder();
+                
+                var checkDuplicateAutoServiceClientManagerUsings = new List<string>();
+
+                var autoServiceClientManagerUsings = new StringBuilder();
+                
+                foreach (var autoServiceServerConsumerInterface in autoServiceServerConsumerInterfaces)
+                {
+                    if (!checkDuplicateAutoServiceClientManagerUsings.Contains(autoServiceServerConsumerInterface.ContainingNamespace.ToString()))
+                    {
+                        checkDuplicateAutoServiceClientManagerUsings.Add(autoServiceServerConsumerInterface.ContainingNamespace.ToString());
+                        autoServiceClientManagerUsings.AppendLine($"using {autoServiceServerConsumerInterface.ContainingNamespace};");
+                    }
+                    
+                    autoServiceServerConsumerDeclarations.Append('\t', 1).AppendLine($"public {autoServiceServerConsumerInterface.Name} {autoServiceServerConsumerInterface.Name.Substring(1)} {{ get; }}");
+                    autoServicesServerConsumerInitializations.Append('\t', 2).AppendLine($"{autoServiceServerConsumerInterface.Name.Substring(1)} = new {autoServiceServerConsumerInterface.Name.Substring(1)}ServerConsumer(_netXClient, manager);");
+
+
+                    var serviceImplementations = new StringBuilder();
+
+                    var methodCode = 0;
+                    foreach (var member in autoServiceServerConsumerInterface.GetMembers())
+                    {
+                        if (member is IMethodSymbol methodSymbol)
+                        {
+                            var methodReturnType = methodSymbol.ReturnType;
+                            var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments[0];
+                            var writeParameters = new StringBuilder();
+                            var parameters = new StringBuilder();
+
+                            foreach (var parameterSymbol in methodSymbol.Parameters)
+                            {
+                                writeParameters
+                                    .Append('\t', 2)
+                                    .AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.Write({parameterSymbol.Name});");
+                                parameters.Append($"{parameterSymbol.Type} {parameterSymbol.Name}, ");
+                            }
+
+                            parameters.Length -= 2;
+
+
+                            serviceImplementations
+                                .Append('\t', 2)
+                                .AppendLine(string.Format(autoServiceServerConsumerMethodResource, autoServiceServerConsumerInterface.Name, methodSymbol.Name, methodReturnType, methodReturnTypeGeneric, parameters, writeParameters, methodCode++));
+                        }
+                    }
+                    
+                    var autoServiceServerConsumerSource = string.Format(autoServiceServerConsumerResource, namespaceAutoServiceClientManager, autoServiceServerConsumerInterface.Name.Substring(1), autoServiceServerConsumerInterface.ContainingNamespace, serviceImplementations);
+                    context.AddSource($"{autoServiceServerConsumerInterface.Name.Substring(1)}ServerConsumer.g.cs", SourceText.From(autoServiceServerConsumerSource, Encoding.UTF8));
+                }
+
+                var autoServiceClientManagerSource = string.Format(autoServiceClientManagerResource, namespaceAutoServiceClientManager, autoServiceClientManagerName, autoServiceServerConsumerDeclarations, autoServicesServerConsumerInitializations, autoServiceClientManagerUsings);
+                context.AddSource($"{autoServiceClientManagerName}.g.cs", SourceText.From(autoServiceClientManagerSource, Encoding.UTF8));
+                
+                
+                var checkDuplicateAutoServiceClientProcessorUsings = new List<string>();
+
+                var autoServiceClientProcessorUsings = new StringBuilder();
+                var autoServiceClientProcessorDeclarations = new StringBuilder();
+                var autoServiceClientProcessorInitializers = new StringBuilder();
+                var autoServiceClientProcessorLoaders = new StringBuilder();
+                var autoServiceClientProcessorProxies = new StringBuilder();
+                
+                foreach (var implementedService in allImplementedServices)
+                {
+                    
+                    var interfaceServer = implementedService.Interfaces[0];
+
+                    if (!checkDuplicateAutoServiceClientProcessorUsings.Contains(interfaceServer.ContainingNamespace.ToString()))
+                    {
+                        checkDuplicateAutoServiceClientProcessorUsings.Add(interfaceServer.ContainingNamespace.ToString());
+                        autoServiceClientProcessorUsings.AppendLine($"using {interfaceServer.ContainingNamespace};");
+                    }
+                    
+                    var serviceClientSource = string.Format(autoServiceClientResource, implementedService.ContainingNamespace, implementedService.Name);
+                    context.AddSource($"{implementedService.Name}.g.cs", SourceText.From(serviceClientSource, Encoding.UTF8));
+                    
+                    autoServiceClientProcessorDeclarations.Append('\t', 2).AppendLine($"private {interfaceServer.Name} _{implementedService.Name.DeCapitalize()};");
+                    autoServiceClientProcessorInitializers.Append('\t', 2).AppendLine($"_{implementedService.Name.DeCapitalize()} = new {implementedService.Name}();");
+
+                    autoServiceClientProcessorLoaders.Append('\t', 2).AppendLine($"_serviceProxies.Add(\"{implementedService.Interfaces[0].Name}\", new Dictionary<ushort, InternalProxy>());");
+                    
+                    var methodCode = 0;
+                    foreach (var member in interfaceServer.GetMembers())
+                    {
+                        if (member is IMethodSymbol methodSymbol)
+                        {
+                            autoServiceClientProcessorLoaders
+                                .Append('\t', 2)
+                                .AppendLine($"_serviceProxies[\"{interfaceServer.Name}\"].Add({methodCode}, InternalProxy_{implementedService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name});");
+
+                            var readParameters = new StringBuilder();
+                            var parameters = new StringBuilder();
+
+                            foreach (var parameterSymbol in methodSymbol.Parameters)
+                            {
+                                readParameters
+                                    .Append('\t', 2)
+                                    .AppendLine($"inputBuffer.Read(ref offset, out {parameterSymbol.Type} {parameterSymbol.Name});");
+                                parameters.Append($"{parameterSymbol.Name}, ");
+                            }
+
+                            parameters.Length -= 2;
+
+                            autoServiceClientProcessorProxies
+                                .Append('\t')
+                                .AppendLine(string.Format(autoServiceClientManagerProcessorMethodProxyResource, implementedService.Name, interfaceServer.Name, methodCode, methodSymbol.Name, implementedService.Name.DeCapitalize(), readParameters, parameters));
+
+                            methodCode++;
+                        }
+                    }
+                }
+                
+                var autoServiceClientProcessorSource = string.Format(autoServiceClientManagerProcessorResource, namespaceAutoServiceClientManager, autoServiceClientManagerName, autoServiceClientProcessorDeclarations, autoServiceClientProcessorInitializers, autoServiceClientProcessorLoaders,
+                    autoServiceClientProcessorProxies, autoServiceClientProcessorUsings);
+                context.AddSource($"{autoServiceClientManagerName}Processor.g.cs", SourceText.From(autoServiceClientProcessorSource, Encoding.UTF8));
             }
 
             #endregion

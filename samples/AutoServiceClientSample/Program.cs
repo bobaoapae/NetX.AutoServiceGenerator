@@ -10,14 +10,14 @@ public class Program
     {
         var cancellationTokenSource = new CancellationTokenSource();
 
-        /*var serviceManager = new AutoServiceClientManager("127.0.0.1", 2000);
+        var serviceManager = new AutoServiceClientManager("127.0.0.1", 2000);
         await serviceManager.ConnectAsync(cancellationTokenSource.Token);
 
         Console.WriteLine($"Invoking AutoServiceServerSample.TryDoSomething(\"test\", 1000, 45, true)");
         var result = await serviceManager.AutoServiceServerSample.TryDoSomething("test", 1000, 45, true);
         
         Console.WriteLine($"Final Result: {result}");
-*/
+
         while (!cancellationTokenSource.IsCancellationRequested)
         {
             var command = Console.ReadLine();

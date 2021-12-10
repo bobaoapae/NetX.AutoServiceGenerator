@@ -5,6 +5,7 @@ using Microsoft.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NetX.AutoServiceGenerator.Definitions;
+{4}
 
 namespace {0};
 

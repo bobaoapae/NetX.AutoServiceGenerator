@@ -27,7 +27,7 @@ public class AutoServiceClientSampleConsumer : IAutoServiceClientSample
             
             stream.Write(value);
 
-            var autoServiceClientSample_1_0_ReceiveLink_Buffer_Result = await _session.RequestAsync(stream);
+            var autoServiceClientSample_1_0_ReceiveLink_Buffer_Result = await _session.Session.RequestAsync(stream);
             var autoServiceClientSample_1_0_ReceiveLink_Buffer_Result_Offset = autoServiceClientSample_1_0_ReceiveLink_Buffer_Result.Offset;
             
             autoServiceClientSample_1_0_ReceiveLink_Buffer_Result.Read(ref autoServiceClientSample_1_0_ReceiveLink_Buffer_Result_Offset, out bool autoServiceClientSample_1_0_ReceiveLink_Result);

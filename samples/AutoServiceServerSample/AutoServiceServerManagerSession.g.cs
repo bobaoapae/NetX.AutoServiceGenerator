@@ -7,13 +7,16 @@ using AutoServiceClientSample.Definitions;
 
 namespace AutoServiceServerSample;
 
-public class AutoServiceServerManagerSession : NetXSession
+public class AutoServiceServerManagerSession
 {
     private RecyclableMemoryStreamManager _streamManager;
     public IAutoServiceClientSample AutoServiceClientSample { get; }
+    
+    public INetXSession Session { get; }
 
-    public AutoServiceServerManagerSession(Guid guid, IPAddress ipAddress, RecyclableMemoryStreamManager streamManager)
+    public AutoServiceServerManagerSession(INetXSession session,  RecyclableMemoryStreamManager streamManager)
     {
+        Session = session;
         _streamManager = streamManager;
 
         #region InitializeServices

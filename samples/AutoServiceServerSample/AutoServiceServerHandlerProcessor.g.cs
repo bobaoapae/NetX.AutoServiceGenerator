@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.IO;
 using NetX.AutoServiceGenerator.Definitions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -10,34 +11,34 @@ using AutoServiceServerSample.Definitions;
 
 namespace AutoServiceServerSample;
 
-public class AutoServiceManagerProcessor : NetXServerProcessor<AutoServiceServerManagerSession>
+public class AutoServiceManagerProcessor : INetXServerProcessor
 {
     public delegate bool TryGetCallingSession(out AutoServiceServerManagerSession session);
     public delegate bool TryGetSession(Guid guid, out AutoServiceServerManagerSession session);
     private delegate ValueTask InternalProxy(AutoServiceServerManagerSession session, NetXMessage message, int offset);
 
+    private readonly ConcurrentDictionary<Guid, AutoServiceServerManagerSession> _sessions;
     private readonly Dictionary<ushort, Dictionary<ushort, InternalProxy>> _serviceProxys;
 
     private AsyncLocal<AutoServiceServerManagerSession> _currentSession;
 
     private AutoServiceServerManager _autoServiceServerManager;
     private RecyclableMemoryStreamManager _streamManager;
-    private TryGetSession _tryGetSession;
 
-    public AutoServiceManagerProcessor(AutoServiceServerManager autoAutoServiceServerManager, RecyclableMemoryStreamManager streamManager, TryGetSession tryGetSession)
+    public AutoServiceManagerProcessor(AutoServiceServerManager autoAutoServiceServerManager, RecyclableMemoryStreamManager streamManager)
     {
         _currentSession = new AsyncLocal<AutoServiceServerManagerSession>();
         _autoServiceServerManager = autoAutoServiceServerManager;
         _streamManager = streamManager;
-        _tryGetSession = tryGetSession;
         _serviceProxys = new Dictionary<ushort, Dictionary<ushort, InternalProxy>>();
+        _sessions = new ConcurrentDictionary<Guid, AutoServiceServerManagerSession>();
         InitializeServices();
         LoadProxys();
     }
 
     private void InitializeServices()
     {
-        _autoServiceServerSample = new AutoServiceServerSample(TryGetCallingSessionProxy, _tryGetSession);
+        _autoServiceServerSample = new AutoServiceServerSample(TryGetCallingSessionProxy, _sessions.TryGetValue);
     }
 
     private void LoadProxys()
@@ -63,12 +64,20 @@ public class AutoServiceManagerProcessor : NetXServerProcessor<AutoServiceServer
         return false;
     }
 
-    public override AutoServiceServerManagerSession CreateSession(Guid sessionId, IPAddress remoteAddress)
+    public Task OnSessionConnectAsync(INetXSession session)
     {
-        return new AutoServiceServerManagerSession(sessionId, remoteAddress, _streamManager);
+        if(!_sessions.TryAdd(session.Id, new AutoServiceServerManagerSession(session, _streamManager)))
+            session.Disconnect();
+        return Task.CompletedTask;
     }
 
-    protected override void OnReceivedMessage(AutoServiceServerManagerSession session, in NetXMessage message)
+    public Task OnSessionDisconnectAsync(Guid sessionId)
+    {
+        _sessions.TryRemove(sessionId, out _);
+        return Task.CompletedTask;
+    }
+
+    public Task OnReceivedMessageAsync(INetXSession session, NetXMessage message)
     {
         var buffer = message.Buffer;
         var offset = buffer.Offset;
@@ -76,11 +85,29 @@ public class AutoServiceManagerProcessor : NetXServerProcessor<AutoServiceServer
         buffer.Read(ref offset, out ushort interfaceCode);
         buffer.Read(ref offset, out ushort methodCode);
 
-        var xMessage = message;
         Task.Run(async () =>
         {
-            await _serviceProxys[interfaceCode][methodCode](session, xMessage, offset);
+            if(!_sessions.TryGetValue(session.Id, out var autoServiceSession))
+                session.Disconnect();
+            await _serviceProxys[interfaceCode][methodCode](autoServiceSession, message, offset);
         });
+        
+        return Task.CompletedTask;
+    }
+
+    public int GetReceiveMessageSize(INetXSession session, in ArraySegment<byte> buffer)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ProcessReceivedBuffer(INetXSession session, in ArraySegment<byte> buffer)
+    {
+        
+    }
+
+    public void ProcessSendBuffer(INetXSession session, in ArraySegment<byte> buffer)
+    {
+        
     }
     
     #region ServiceProviders
@@ -106,7 +133,7 @@ public class AutoServiceManagerProcessor : NetXServerProcessor<AutoServiceServer
         {
             stream.Write(autoServiceSample_0_0_TryDoSomething_Result);
             
-            await session.ReplyAsync(message.Id, stream);
+            await session.Session.ReplyAsync(message.Id, stream);
         }
         catch (Exception)
         {

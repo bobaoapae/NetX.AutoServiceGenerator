@@ -31,11 +31,12 @@ public partial class AutoServiceServerManager
             MaximumFreeSmallPoolBytes = blockSize * 2048,
             MaximumFreeLargePoolBytes = maxBufferSize * 4
         };
-        _processor = new AutoServiceManagerProcessor(this, manager, TryGetSession);
+        _processor = new AutoServiceManagerProcessor(this, manager);
         _netXServer = NetXServerBuilder.Create()
             .Processor(_processor)
             .EndPoint(_address, _port)
             .Duplex(true)
+            .CopyBuffer(true)
             .NoDelay(true)
             .ReceiveBufferSize(1024)
             .SendBufferSize(1024)
@@ -45,18 +46,5 @@ public partial class AutoServiceServerManager
     public void StartListening(CancellationToken cancellationToken)
     {
         _netXServer.Listen(cancellationToken);
-    }
-
-    private bool TryGetSession(Guid guid, out AutoServiceServerManagerSession session)
-    {
-        if(_netXServer.TryGetSession(guid, out var iSession))
-        {
-            session = (AutoServiceServerManagerSession)iSession;
-            return true;
-        }
-
-        session = null;
-
-        return false;
     }
 }

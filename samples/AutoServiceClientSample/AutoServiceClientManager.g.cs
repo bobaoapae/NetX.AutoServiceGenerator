@@ -43,6 +43,7 @@ public partial class AutoServiceClientManager
             .Processor(_processor)
             .EndPoint(_address, _port)
             .Duplex(true)
+            .CopyBuffer(true)
             .NoDelay(true)
             .ReceiveBufferSize(1024)
             .SendBufferSize(1024)

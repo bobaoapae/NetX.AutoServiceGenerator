@@ -42,6 +42,31 @@ public class AutoServiceClientManagerProcessor : INetXClientProcessor
         _autoServiceClientSample = new AutoServiceClientSample();
     }
 
+    public Task OnConnectedAsync(INetXClientSession client)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task OnDisconnectedAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message)
+    {
+        var buffer = message.Buffer;
+        var offset = buffer.Offset;
+        
+        buffer.Read(ref offset, out ushort interfaceCode);
+        buffer.Read(ref offset, out ushort methodCode);
+
+        Task.Run(async () =>
+        {
+            await _serviceProxys[interfaceCode][methodCode](client, message, offset);
+        });
+        return Task.CompletedTask;
+    }
+
     public int GetReceiveMessageSize(INetXClientSession client, in ArraySegment<byte> buffer)
     {
         throw new NotImplementedException();
@@ -50,21 +75,6 @@ public class AutoServiceClientManagerProcessor : INetXClientProcessor
     public void ProcessReceivedBuffer(INetXClientSession client, in ArraySegment<byte> buffer)
     {
         
-    }
-
-    public void OnReceivedMessage(INetXClientSession client, in NetXMessage message)
-    {
-        var buffer = message.Buffer;
-        var offset = buffer.Offset;
-        
-        buffer.Read(ref offset, out ushort interfaceCode);
-        buffer.Read(ref offset, out ushort methodCode);
-
-        var xMessage = message;
-        Task.Run(async () =>
-        {
-            await _serviceProxys[interfaceCode][methodCode](client, xMessage, offset);
-        });
     }
 
     public void ProcessSendBuffer(INetXClientSession client, in ArraySegment<byte> buffer)

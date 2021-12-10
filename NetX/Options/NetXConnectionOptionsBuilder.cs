@@ -8,7 +8,9 @@ namespace NetX.Options
         protected bool _noDelay = false;
         protected int _recvBufferSize = 1024;
         protected int _sendBufferSize = 1024;
-        protected bool _useCompletion = false;
+        protected bool _duplex = false;
+        protected int _duplexTimeout = 5000;
+        protected bool _copyBuffer = true;
 
         public INetXConnectionOptionsBuilder<T> EndPoint(IPEndPoint endPoint)
         {
@@ -25,9 +27,16 @@ namespace NetX.Options
             return this;
         }
 
-        public INetXConnectionOptionsBuilder<T> Duplex(bool completion)
+        public INetXConnectionOptionsBuilder<T> Duplex(bool duplex, int timeout = 5000)
         {
-            _useCompletion = completion;
+            _duplex = duplex;
+            _duplexTimeout = timeout;
+            return this;
+        }
+
+        public INetXConnectionOptionsBuilder<T> CopyBuffer(bool copyBuffer)
+        {
+            _copyBuffer = copyBuffer;
             return this;
         }
 

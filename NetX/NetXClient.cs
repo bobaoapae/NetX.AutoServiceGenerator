@@ -8,47 +8,48 @@ namespace NetX
 {
     public class NetXClient : NetXConnection, INetXClient
     {
-        private new readonly NetXClientOptions _options;
-
         internal NetXClient(NetXClientOptions options)
+            : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), options)
         {
-            _options = options;
+            _socket.NoDelay = _options.NoDelay;
+            _socket.LingerState = new LingerOption(true, 5);
         }
 
         public async Task ConnectAsync(CancellationToken cancellationToken = default)
         {
-            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp)
-            {
-                NoDelay = _options.NoDelay
-            };
+            await _socket.ConnectAsync(_options.EndPoint, cancellationToken);
 
-            await socket.ConnectAsync(_options.EndPoint, cancellationToken);
+            await ((NetXClientOptions)_options).Processor.OnConnectedAsync(this);
 
-            _ = ProcessClientConnection(socket, cancellationToken);
+            _ = ProcessClientConnection(cancellationToken);
         }
 
-        private async Task ProcessClientConnection(Socket socket, CancellationToken cancellationToken)
+        private async Task ProcessClientConnection(CancellationToken cancellationToken)
         {
             try
             {
-                await ProcessConnection(socket, _options, cancellationToken);
+                await ProcessConnection(cancellationToken);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"[CLIENT EXCEPTION]: {ex}");
+            }
+            finally
+            {
+                await ((NetXClientOptions)_options).Processor.OnDisconnectedAsync();
             }
         }
 
-        protected override int GetReceiveMessageSize(in ArraySegment<byte> buffer)
-            => _options.Processor.GetReceiveMessageSize(this, in buffer);
+        protected override Task OnReceivedMessageAsync(NetXMessage message)
+            => ((NetXClientOptions)_options).Processor.OnReceivedMessageAsync(this, message);
 
-        protected override void OnReceivedMessage(in NetXMessage message)
-            => _options.Processor.OnReceivedMessage(this, in message);
+        protected override int GetReceiveMessageSize(in ArraySegment<byte> buffer)
+            => ((NetXClientOptions)_options).Processor.GetReceiveMessageSize(this, in buffer);
 
         protected override void ProcessReceivedBuffer(in ArraySegment<byte> buffer)
-            => _options.Processor.ProcessReceivedBuffer(this, in buffer);
+            => ((NetXClientOptions)_options).Processor.ProcessReceivedBuffer(this, in buffer);
 
         protected override void ProcessSendBuffer(in ArraySegment<byte> buffer)
-            => _options.Processor.ProcessSendBuffer(this, in buffer);
+            => ((NetXClientOptions)_options).Processor.ProcessSendBuffer(this, in buffer);
     }
 }

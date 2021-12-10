@@ -1,10 +1,28 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 using NetX.Options;
 
 namespace NetX
 {
-    public class NetXSession : NetXConnection, INetXSession
+    public sealed class NetXSession : NetXConnection, INetXSession
     {
+        public Guid Id { get; }
+        public IPAddress RemoteAddress { get; }
+        public DateTime ConnectionTime { get; }
+
+        public NetXSession(Socket socket, IPAddress remoteAddress, NetXServerOptions options) 
+            : base(socket, options)
+        {
+            Id = Guid.NewGuid();
+            RemoteAddress = remoteAddress;
+            ConnectionTime = DateTime.UtcNow;
+        }
+
+        protected override Task OnReceivedMessageAsync(NetXMessage message)
+            => ((NetXServerOptions)_options).Processor.OnReceivedMessageAsync(this, message);
+
         protected override int GetReceiveMessageSize(in ArraySegment<byte> buffer)
             => ((NetXServerOptions)_options).Processor.GetReceiveMessageSize(this, in buffer);
 
@@ -13,9 +31,6 @@ namespace NetX
             ((NetXServerOptions)_options).Processor.ProcessReceivedBuffer(this, in buffer);
             base.ProcessReceivedBuffer(buffer);
         }
-
-        protected override void OnReceivedMessage(in NetXMessage message)
-            => ((NetXServerOptions)_options).Processor.OnReceivedMessage(this, in message);
 
         protected override void ProcessSendBuffer(in ArraySegment<byte> buffer)
         {

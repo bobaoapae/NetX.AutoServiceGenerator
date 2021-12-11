@@ -110,12 +110,28 @@ namespace NetX.AutoServiceGenerator
                 {
                     return true;
                 }
+                if (namedTypeSymbol.Interfaces.Any(symbol => symbol.Name is "IAutoSerializer" or "IAutoDeserialize"))
+                {
+                    return true;
+                }
             }
             else if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
             {
                 return IsValidTypeForArgumentOrReturn(arrayTypeSymbol.ElementType);
             }
+            return false;
+        }
 
+        public static bool NeedUseAutoSerializeOrDeserialize(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.Interfaces.Any(symbol => symbol.Name is "IAutoSerializer" or "IAutoDeserialize"))
+            {
+                return true;
+            }
+            else if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+            {
+                return NeedUseAutoSerializeOrDeserialize(arrayTypeSymbol.ElementType);
+            }
             return false;
         }
 

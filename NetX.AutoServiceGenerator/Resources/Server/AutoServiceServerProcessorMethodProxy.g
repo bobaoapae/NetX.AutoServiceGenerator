@@ -10,7 +10,7 @@ private async ValueTask InternalProxy_{0}_{1}_{2}_{3}({4}Session session, NetXMe
         var stream = (RecyclableMemoryStream)_streamManager.GetStream("{0}_{1}_{2}_{3}", 4096, true);
         try
         {{
-            stream.ExWrite({0}_{1}_{2}_{3}_Result);
+            {8}
             
             await session.Session.ReplyAsync(message.Id, stream);
         }}

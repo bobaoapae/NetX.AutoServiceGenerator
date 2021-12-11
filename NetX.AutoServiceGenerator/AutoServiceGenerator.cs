@@ -337,6 +337,7 @@ namespace NetX.AutoServiceGenerator
 
                                 var readParameters = new StringBuilder();
                                 var parameters = new StringBuilder();
+                                var writeResult = new StringBuilder();
 
                                 foreach (var parameterSymbol in methodSymbol.Parameters)
                                 {
@@ -375,12 +376,40 @@ namespace NetX.AutoServiceGenerator
 
                                     parameters.Append($"{parameterSymbol.Name}, ");
                                 }
+                                
+                                var methodReturnType = methodSymbol.ReturnType;
+                                var methodReturnGenericType = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
+
+                                var resultVariableName = $"{implementedServerService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name}_Result";
+
+                                if (methodReturnGenericType != null && AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnGenericType))
+                                {
+                                    if (methodReturnGenericType is IArrayTypeSymbol)
+                                    {
+                                        writeResult
+                                            .AppendLine($"stream.ExWrite({resultVariableName}.Length);");
+                                        writeResult.Append('\t', 3)
+                                            .AppendLine($"for (var x = 0; x < {resultVariableName}.Length; x++)")
+                                            .Append('\t', 3).Append("{").AppendLine()
+                                            .Append('\t', 4).Append($"{resultVariableName}[x].Serialize(stream);")
+                                            .Append('\t', 3).Append("}").AppendLine();
+                                    }
+                                    else
+                                    {
+                                        writeResult.Append($"{resultVariableName}.Serialize(stream);");
+                                    }
+                                }
+                                else
+                                {
+                                    writeResult.Append($"stream.ExWrite({resultVariableName});");
+                                }
 
                                 parameters.Length -= 2;
 
                                 autoServiceServerProcessorProxies
                                     .Append('\t')
-                                    .AppendLine(string.Format(autoServiceServerProcessorMethodProxyResource, implementedServerService.Name, interfaceServer.Name, methodCode, methodSymbol.Name, autoServiceServerManagerName, implementedServerService.Name.DeCapitalize(), readParameters, parameters));
+                                    .AppendLine(string.Format(autoServiceServerProcessorMethodProxyResource, implementedServerService.Name, interfaceServer.Name, methodCode, methodSymbol.Name, autoServiceServerManagerName, implementedServerService.Name.DeCapitalize(), readParameters, parameters,
+                                        writeResult));
 
                                 methodCode++;
                             }
@@ -563,6 +592,7 @@ namespace NetX.AutoServiceGenerator
 
                             var readParameters = new StringBuilder();
                             var parameters = new StringBuilder();
+                            var writeResult = new StringBuilder();
 
                             foreach (var parameterSymbol in methodSymbol.Parameters)
                             {
@@ -580,15 +610,15 @@ namespace NetX.AutoServiceGenerator
                                         readParameters.Append('\t', 2)
                                             .AppendLine($"for (var x = 0; x < arraySize_{parameterSymbol.Name}; x++)")
                                             .Append('\t', 2).Append("{").AppendLine()
-                                            .Append('\t', 3).Append($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}()")
+                                            .Append('\t', 3).Append($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}();")
                                             .Append('\t', 3).Append($"instance_{arrayTypeSymbol.ElementType}.Deserialize(in inputBuffer, ref offset);")
-                                            .Append('\t', 3).Append($"{parameterSymbol.Name}[x] = instance_{arrayTypeSymbol.ElementType}")
+                                            .Append('\t', 3).Append($"{parameterSymbol.Name}[x] = instance_{arrayTypeSymbol.ElementType};")
                                             .Append('\t', 2).Append("}").AppendLine();
                                     }
                                     else
                                     {
                                         readParameters
-                                            .Append('\t', 3).Append($"{parameterSymbol.Name} = new {parameterSymbol.Type}()")
+                                            .Append('\t', 3).Append($"{parameterSymbol.Name} = new {parameterSymbol.Type}();")
                                             .Append('\t', 3).Append($"{parameterSymbol.Name}.Deserialize(in inputBuffer, ref offset);");
                                     }
                                 }
@@ -602,11 +632,38 @@ namespace NetX.AutoServiceGenerator
                                 parameters.Append($"{parameterSymbol.Name}, ");
                             }
 
+                            var methodReturnType = methodSymbol.ReturnType;
+                            var methodReturnGenericType = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
+
+                            var resultVariableName = $"{implementedService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name}_Result";
+
+                            if (methodReturnGenericType != null && AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnGenericType))
+                            {
+                                if (methodReturnGenericType is IArrayTypeSymbol)
+                                {
+                                    writeResult
+                                        .AppendLine($"stream.ExWrite({resultVariableName}.Length);");
+                                    writeResult.Append('\t', 3)
+                                        .AppendLine($"for (var x = 0; x < {resultVariableName}.Length; x++)")
+                                        .Append('\t', 3).Append("{").AppendLine()
+                                        .Append('\t', 4).Append($"{resultVariableName}[x].Serialize(stream);")
+                                        .Append('\t', 3).Append("}").AppendLine();
+                                }
+                                else
+                                {
+                                    writeResult.Append($"{resultVariableName}.Serialize(stream);");
+                                }
+                            }
+                            else
+                            {
+                                writeResult.Append($"stream.ExWrite({resultVariableName});");
+                            }
+
                             parameters.Length -= 2;
 
                             autoServiceClientProcessorProxies
                                 .Append('\t')
-                                .AppendLine(string.Format(autoServiceClientManagerProcessorMethodProxyResource, implementedService.Name, interfaceServer.Name, methodCode, methodSymbol.Name, implementedService.Name.DeCapitalize(), readParameters, parameters));
+                                .AppendLine(string.Format(autoServiceClientManagerProcessorMethodProxyResource, implementedService.Name, interfaceServer.Name, methodCode, methodSymbol.Name, implementedService.Name.DeCapitalize(), readParameters, parameters, writeResult));
 
                             methodCode++;
                         }

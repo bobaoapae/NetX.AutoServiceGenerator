@@ -110,7 +110,7 @@ namespace NetX.AutoServiceGenerator
                 {
                     return true;
                 }
-                if (namedTypeSymbol.Interfaces.Any(symbol => symbol.Name is "IAutoSerializer" or "IAutoDeserialize"))
+                if (namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoSerializeAttribute") && namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoDeserializeAttribute"))
                 {
                     return true;
                 }
@@ -124,7 +124,7 @@ namespace NetX.AutoServiceGenerator
 
         public static bool NeedUseAutoSerializeOrDeserialize(ITypeSymbol typeSymbol)
         {
-            if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.Interfaces.Any(symbol => symbol.Name is "IAutoSerializer" or "IAutoDeserialize"))
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoSerializeAttribute") && namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoDeserializeAttribute"))
             {
                 return true;
             }

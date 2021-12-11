@@ -12,42 +12,34 @@ namespace NetX.AutoServiceGenerator.Definitions
                 stream.WriteByte(0);
         }
 
-        public static void Write(this MemoryStream stream, in bool value)
+        public static void ExWrite(this MemoryStream stream, in bool value)
         {
             stream.WriteByte(value ? (byte)1 : (byte)0);
         }
 
-        public static void Write(this MemoryStream stream, in byte value)
+        public static void ExWrite(this MemoryStream stream, in byte value)
         {
             stream.WriteByte(value);
         }
 
-        public static void Write(this MemoryStream stream, in sbyte value)
+        public static void ExWrite(this MemoryStream stream, in sbyte value)
         {
             stream.WriteByte((byte)value);
         }
 
-        public static void Write(this MemoryStream stream, in short value)
-        {
-            stream.WriteByte((byte)value);
-            stream.WriteByte((byte)(value >> 8));
-        }
-
-        public static void Write(this MemoryStream stream, in ushort value)
+        public static void ExWrite(this MemoryStream stream, in short value)
         {
             stream.WriteByte((byte)value);
             stream.WriteByte((byte)(value >> 8));
         }
 
-        public static void Write(this MemoryStream stream, in int value)
+        public static void ExWrite(this MemoryStream stream, in ushort value)
         {
             stream.WriteByte((byte)value);
             stream.WriteByte((byte)(value >> 8));
-            stream.WriteByte((byte)(value >> 16));
-            stream.WriteByte((byte)(value >> 24));
         }
 
-        public static void Write(this MemoryStream stream, in uint value)
+        public static void ExWrite(this MemoryStream stream, in int value)
         {
             stream.WriteByte((byte)value);
             stream.WriteByte((byte)(value >> 8));
@@ -55,19 +47,15 @@ namespace NetX.AutoServiceGenerator.Definitions
             stream.WriteByte((byte)(value >> 24));
         }
 
-        public static void Write(this MemoryStream stream, in long value)
+        public static void ExWrite(this MemoryStream stream, in uint value)
         {
             stream.WriteByte((byte)value);
             stream.WriteByte((byte)(value >> 8));
             stream.WriteByte((byte)(value >> 16));
             stream.WriteByte((byte)(value >> 24));
-            stream.WriteByte((byte)(value >> 32));
-            stream.WriteByte((byte)(value >> 40));
-            stream.WriteByte((byte)(value >> 48));
-            stream.WriteByte((byte)(value >> 56));
         }
 
-        public static void Write(this MemoryStream stream, in ulong value)
+        public static void ExWrite(this MemoryStream stream, in long value)
         {
             stream.WriteByte((byte)value);
             stream.WriteByte((byte)(value >> 8));
@@ -79,17 +67,29 @@ namespace NetX.AutoServiceGenerator.Definitions
             stream.WriteByte((byte)(value >> 56));
         }
 
-        public static void Write(this MemoryStream stream, in float value)
+        public static void ExWrite(this MemoryStream stream, in ulong value)
+        {
+            stream.WriteByte((byte)value);
+            stream.WriteByte((byte)(value >> 8));
+            stream.WriteByte((byte)(value >> 16));
+            stream.WriteByte((byte)(value >> 24));
+            stream.WriteByte((byte)(value >> 32));
+            stream.WriteByte((byte)(value >> 40));
+            stream.WriteByte((byte)(value >> 48));
+            stream.WriteByte((byte)(value >> 56));
+        }
+
+        public static void ExWrite(this MemoryStream stream, in float value)
         {
             var src = BitConverter.GetBytes(value);
 
             if (!BitConverter.IsLittleEndian)
                 Array.Reverse(src);
 
-            stream.Write(src, 0, src.Length);
+            stream.ExWrite(src, 0, src.Length);
         }
 
-        public static void Write(this MemoryStream stream, string value, in int length, in int offset = 0)
+        public static void ExWrite(this MemoryStream stream, string value, in int length, in int offset = 0)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -110,7 +110,7 @@ namespace NetX.AutoServiceGenerator.Definitions
                 stream.Skip(in rest);
         }
 
-        public static void Write(this MemoryStream stream, byte[] value, in int length, in int offset = 0)
+        public static void ExWrite(this MemoryStream stream, byte[] value, in int length, in int offset = 0)
         {
             if (value == null)
             {
@@ -129,115 +129,115 @@ namespace NetX.AutoServiceGenerator.Definitions
                 stream.Skip(in rest);
         }
 
-        public static void Write(this MemoryStream stream, Guid guid)
+        public static void ExWrite(this MemoryStream stream, Guid guid)
         {
             var bytes = guid.ToByteArray();
-            stream.Write(bytes.Length);
-            stream.Write(bytes, bytes.Length);
+            stream.ExWrite(bytes.Length);
+            stream.ExWrite(bytes, bytes.Length);
         }
 
-        public static void Write(this MemoryStream stream, string value)
+        public static void ExWrite(this MemoryStream stream, string value)
         {
-            stream.Write(value.Length);
-            stream.Write(value, value.Length);
+            stream.ExWrite(value.Length);
+            stream.ExWrite(value, value.Length);
         }
 
-        public static void Write(this MemoryStream stream, string[] value)
+        public static void ExWrite(this MemoryStream stream, string[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, bool[] value)
+        public static void ExWrite(this MemoryStream stream, bool[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, byte[] value)
+        public static void ExWrite(this MemoryStream stream, byte[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, sbyte[] value)
+        public static void ExWrite(this MemoryStream stream, sbyte[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, short[] value)
+        public static void ExWrite(this MemoryStream stream, short[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, ushort[] value)
+        public static void ExWrite(this MemoryStream stream, ushort[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, int[] value)
+        public static void ExWrite(this MemoryStream stream, int[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, uint[] value)
+        public static void ExWrite(this MemoryStream stream, uint[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, long[] value)
+        public static void ExWrite(this MemoryStream stream, long[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, ulong[] value)
+        public static void ExWrite(this MemoryStream stream, ulong[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
 
-        public static void Write(this MemoryStream stream, float[] value)
+        public static void ExWrite(this MemoryStream stream, float[] value)
         {
-            stream.Write(value.Length);
+            stream.ExWrite(value.Length);
             foreach (var s in value)
             {
-                stream.Write(s);
+                stream.ExWrite(s);
             }
         }
     }

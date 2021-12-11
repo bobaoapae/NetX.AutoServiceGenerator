@@ -27,7 +27,7 @@ public partial class AutoServiceServerSample : IAutoServiceServerSample
 
     }
 
-    public Task<int[]> AppendValues(int value1, int value2, int value3, int[] value4)
+    public Task<int[]> AppendValues(int value1, int value2, int value3, byte[] value4)
     {
         Console.WriteLine($"Invoked Service AutoServiceServerSample.AppendValues({value1},{value2},{value3},[{string.Join(",", value4)}]);");
 
@@ -35,7 +35,7 @@ public partial class AutoServiceServerSample : IAutoServiceServerSample
         result.Add(value1);
         result.Add(value2);
         result.Add(value3);
-        result.AddRange(value4);
+        result.AddRange(value4.Select(Convert.ToInt32));
 
         return Task.FromResult(result.ToArray());
     }

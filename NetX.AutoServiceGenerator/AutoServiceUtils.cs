@@ -102,6 +102,23 @@ namespace NetX.AutoServiceGenerator
             }
         }
 
+        public static bool IsValidTypeForArgumentOrReturn(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                if (namedTypeSymbol.IsValueType && namedTypeSymbol.EnumUnderlyingType == null)
+                {
+                    return true;
+                }
+            }
+            else if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+            {
+                return IsValidTypeForArgumentOrReturn(arrayTypeSymbol.ElementType);
+            }
+
+            return false;
+        }
+
         public static string Capitalize(this string source)
         {
             return source.First().ToString().ToUpper() + source.Substring(1);

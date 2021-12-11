@@ -124,6 +124,43 @@ namespace NetX.AutoServiceGenerator
                         implementedServerService.Locations[0]));
                     return;
                 }
+
+                foreach (var member in implementedServerService.GetMembers())
+                {
+                    if (member is IMethodSymbol methodSymbol && methodSymbol.MethodKind!=MethodKind.Constructor)
+                    {
+                        var methodReturnType = methodSymbol.ReturnType;
+
+                        if (methodReturnType.Name != "Task" && methodReturnType.Name != "ValueTask")
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                new DiagnosticDescriptor(
+                                    "ASG0005",
+                                    "Method return type must be Task or ValueTask",
+                                    "Method return type must be Task or ValueTask",
+                                    "",
+                                    DiagnosticSeverity.Error,
+                                    true),
+                                methodSymbol.Locations[0]));
+                            return;
+                        }
+
+                        var methodReturnTypeGeneric = ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0];
+                        if (!AutoServiceUtils.IsValidTypeForArgumentOrReturn(methodReturnTypeGeneric))
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                new DiagnosticDescriptor(
+                                    "ASG0006",
+                                    $"Non supported generic type <{methodReturnTypeGeneric}>",
+                                    $"Non supported generic type <{methodReturnTypeGeneric}>",
+                                    "",
+                                    DiagnosticSeverity.Error,
+                                    true),
+                                methodSymbol.Locations[0]));
+                            return;
+                        }
+                    }
+                }
             }
 
             #endregion
@@ -219,7 +256,7 @@ namespace NetX.AutoServiceGenerator
                                 {
                                     writeParameters
                                         .Append('\t', 2)
-                                        .AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.Write({parameterSymbol.Name});");
+                                        .AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name});");
                                     parameters.Append($"{parameterSymbol.Type} {parameterSymbol.Name}, ");
                                 }
 
@@ -330,11 +367,6 @@ namespace NetX.AutoServiceGenerator
 
             if (autoServiceClientManagers.Count == 1)
             {
-#if DEBUG
-            if (!Debugger.IsAttached)
-                Debugger.Launch();
-#endif
-                
                 var autoServiceClientManager = autoServiceClientManagers[0];
 
                 if (!AutoServiceUtils.CheckClassIsPartial(autoServiceClientManager))
@@ -399,7 +431,7 @@ namespace NetX.AutoServiceGenerator
                             {
                                 writeParameters
                                     .Append('\t', 2)
-                                    .AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.Write({parameterSymbol.Name});");
+                                    .AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name});");
                                 parameters.Append($"{parameterSymbol.Type} {parameterSymbol.Name}, ");
                             }
 

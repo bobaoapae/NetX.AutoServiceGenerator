@@ -9,7 +9,7 @@
         var stream = (RecyclableMemoryStream)_streamManager.GetStream("{0}_{1}_{2}_{3}", 4096, true);
         try
         {{
-            stream.Write({0}_{1}_{2}_{3}_Result);
+            stream.ExWrite({0}_{1}_{2}_{3}_Result);
             
             await client.ReplyAsync(message.Id, stream);
         }}

@@ -18,7 +18,7 @@ public class Program
         
         Console.WriteLine($"Final Result: {result}");
 
-        var appendResult = await serviceManager.AutoServiceServerSample.AppendValues(1, 2, 3, new[] { 4, 5, 6, 7, 8, 9 });
+        var appendResult = await serviceManager.AutoServiceServerSample.AppendValues(1, 2, 3, new byte[] { 4, 5, 6, 7, 8, 9 });
         
         Console.WriteLine($"Append Result: {string.Join(",", appendResult)}");
 

@@ -13,6 +13,9 @@ public class Program
         var serviceManager = new AutoServiceServerManager("0.0.0.0", 2000);
         serviceManager.StartListening(cancellationTokenSource.Token);
 
+        var serviceManagerTwo = new AutoServiceServerManagerTwo("0.0.0.0", 2001);
+        serviceManagerTwo.StartListening(cancellationTokenSource.Token);
+
 
         while (!cancellationTokenSource.IsCancellationRequested)
         {

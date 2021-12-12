@@ -21,6 +21,18 @@ public class Program
         var appendResult = await serviceManager.AutoServiceSample.AppendValues(1, 2, 3, new byte[] { 4, 5, 6, 7, 8, 9 });
         
         Console.WriteLine($"Append Result: {string.Join(",", appendResult)}");
+        
+        var serviceManagerTwo = new AutoServiceClientManagerTwo("127.0.0.1", 2001);
+        await serviceManagerTwo.ConnectAsync(cancellationTokenSource.Token);
+
+        Console.WriteLine($"Invoking AutoServiceServerSample.TryDoSomething(\"test\", 1000, 45, true)");
+        result = await serviceManagerTwo.AutoServiceSample.TryDoSomething("test", 1000, 45, true);
+        
+        Console.WriteLine($"Final Result: {result}");
+
+        appendResult = await serviceManagerTwo.AutoServiceSample.AppendValues(1, 2, 3, new byte[] { 4, 5, 6, 7, 8, 9 });
+        
+        Console.WriteLine($"Append Result: {string.Join(",", appendResult)}");
 
         while (!cancellationTokenSource.IsCancellationRequested)
         {

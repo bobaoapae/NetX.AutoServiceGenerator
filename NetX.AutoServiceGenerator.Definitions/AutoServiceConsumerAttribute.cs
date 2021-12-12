@@ -3,11 +3,11 @@
 namespace NetX.AutoServiceGenerator.Definitions
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class AutoServiceConsumer : Attribute
+    public class AutoServiceConsumerAttribute : Attribute
     {
         public Type AutoService { get; }
 
-        public AutoServiceConsumer(Type autoService)
+        public AutoServiceConsumerAttribute(Type autoService)
         {
             AutoService = autoService;
         }

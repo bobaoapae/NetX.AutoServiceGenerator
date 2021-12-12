@@ -5,9 +5,9 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceClientSample;
 
-[AutoServiceProvider(typeof(AutoServiceReceiverSample))]
+[AutoServiceProvider(typeof(AutoServiceReceiverSampleTwo))]
 [AutoServiceConsumer(typeof(IAutoServiceSample))]
-public partial class AutoServiceClientManager : IAutoServiceClientManager
+public partial class AutoServiceClientManagerTwo : IAutoServiceClientManager
 {
     public Task OnConnectedAsync()
     {

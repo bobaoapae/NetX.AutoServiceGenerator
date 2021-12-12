@@ -5,17 +5,17 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceServerSample;
 
-[AutoServiceProvider(typeof(AutoServiceSample))]
+[AutoServiceProvider(typeof(AutoServiceSampleTwo))]
 [AutoServiceConsumer(typeof(IAutoServiceReceiverSample))]
-public partial class AutoServiceServerManager : IAutoServiceServerManager
+public partial class AutoServiceServerManagerTwo : IAutoServiceServerManager
 {
-    public Task OnSessionConnectAsync(AutoServiceServerManagerSession session)
+    public Task OnSessionConnectAsync(AutoServiceServerManagerTwoSession session)
     {
         Console.WriteLine($"Session Connected: {session.Session.Id}");
         return Task.CompletedTask;
     }
 
-    public Task OnSessionDisconnectAsync(AutoServiceServerManagerSession session)
+    public Task OnSessionDisconnectAsync(AutoServiceServerManagerTwoSession session)
     {
         Console.WriteLine($"Session Disconnected: {session.Session.Id}");
         return Task.CompletedTask;

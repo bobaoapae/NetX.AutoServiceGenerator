@@ -5,11 +5,12 @@ using Microsoft.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NetX.AutoServiceGenerator.Definitions;
+using Microsoft.Extensions.Logging;
 {4}
 
 namespace {0};
 
-public partial class {1}
+public partial class {1} : ISessionListenerClient
 {{
 
     private readonly RecyclableMemoryStreamManager manager;
@@ -25,7 +26,7 @@ public partial class {1}
 
     #endregion
     
-    public {1}(string address, ushort port)
+    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, int receiveBufferSize = 1024, int sendBufferSize = 1024)
     {{
         _address = address;
         _port = port;
@@ -38,15 +39,15 @@ public partial class {1}
             MaximumFreeSmallPoolBytes = blockSize * 2048,
             MaximumFreeLargePoolBytes = maxBufferSize * 4
         }};
-        _processor = new {1}Processor(this, manager);
-        _netXClient = NetXClientBuilder.Create()
+        _processor = new {1}Processor(this, manager, OnConnectedAsync, OnDisconnectedAsync);
+        _netXClient = NetXClientBuilder.Create(loggerFactory, nameof({1}))
             .Processor(_processor)
             .EndPoint(_address, _port)
             .Duplex(true)
             .CopyBuffer(true)
             .NoDelay(true)
-            .ReceiveBufferSize(1024)
-            .SendBufferSize(1024)
+            .ReceiveBufferSize(receiveBufferSize)
+            .SendBufferSize(sendBufferSize)
             .Build();
 
         #region InitializeServices

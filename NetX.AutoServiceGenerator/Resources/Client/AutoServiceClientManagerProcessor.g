@@ -13,17 +13,23 @@ namespace {0};
 public class {1}Processor : INetXClientProcessor
 {{
     private delegate ValueTask InternalProxy(INetXClientSession client, NetXMessage message, int offset);
+    public delegate Task ConnectDelegate();
+    public delegate Task DisconnectDelegate();
 
     private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxies;
     
     private {1} _autoServiceManager;
     private RecyclableMemoryStreamManager _streamManager;
+    private ConnectDelegate _connectDelegate;
+    private DisconnectDelegate _disconnectDelegate;
 
-    public {1}Processor({1} autoServiceManager, RecyclableMemoryStreamManager streamManager)
+    public {1}Processor({1} autoServiceManager, RecyclableMemoryStreamManager streamManager, ConnectDelegate connectDelegate, DisconnectDelegate disconnectDelegate)
     {{
         _autoServiceManager = autoServiceManager;
         _streamManager = streamManager;
         _serviceProxies = new Dictionary<string, Dictionary<ushort, InternalProxy>>();
+        _connectDelegate = connectDelegate;
+        _disconnectDelegate = disconnectDelegate;
         LoadProxys();
         InitializeServices();
     }}
@@ -39,12 +45,12 @@ public class {1}Processor : INetXClientProcessor
 
     public Task OnConnectedAsync(INetXClientSession client)
     {{
-        return Task.CompletedTask;
+        return _connectDelegate();
     }}
 
     public Task OnDisconnectedAsync()
     {{
-        return Task.CompletedTask;
+        return _disconnectDelegate();
     }}
 
     public Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message)

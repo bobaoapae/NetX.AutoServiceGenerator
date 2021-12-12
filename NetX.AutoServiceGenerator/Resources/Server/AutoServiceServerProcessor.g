@@ -16,6 +16,8 @@ public class {1}Processor : INetXServerProcessor
     public delegate bool TryGetCallingSession(out {1}Session session);
     public delegate bool TryGetSession(Guid guid, out {1}Session session);
     private delegate ValueTask InternalProxy({1}Session session, NetXMessage message, int offset);
+    public delegate Task ConnectDelegate({1}Session session);
+    public delegate Task DisconnectDelegate({1}Session session);
 
     private readonly ConcurrentDictionary<Guid, {1}Session> _sessions;
     private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxies;
@@ -24,13 +26,17 @@ public class {1}Processor : INetXServerProcessor
 
     private {1} _autoServerManager;
     private RecyclableMemoryStreamManager _streamManager;
+    private ConnectDelegate _connectDelegate;
+    private DisconnectDelegate _disconnectDelegate;
 
-    public {1}Processor({1} autoServerManager, RecyclableMemoryStreamManager streamManager)
+    public {1}Processor({1} autoServerManager, RecyclableMemoryStreamManager streamManager, ConnectDelegate connectDelegate, DisconnectDelegate disconnectDelegate)
     {{
         _currentSession = new AsyncLocal<{1}Session>();
         _autoServerManager = autoServerManager;
         _streamManager = streamManager;
         _serviceProxies = new Dictionary<string, Dictionary<ushort, InternalProxy>>();
+        _connectDelegate = connectDelegate;
+        _disconnectDelegate = disconnectDelegate;
         _sessions = new ConcurrentDictionary<Guid, {1}Session>();
         InitializeServices();
         LoadProxys();
@@ -62,14 +68,16 @@ public class {1}Processor : INetXServerProcessor
 
     public Task OnSessionConnectAsync(INetXSession session)
     {{
-        if(!_sessions.TryAdd(session.Id, new {1}Session(session, _streamManager)))
+        var internalSession = new {1}Session(session, _streamManager);
+        if(!_sessions.TryAdd(session.Id, internalSession))
             session.Disconnect();
-        return Task.CompletedTask;
+        return _connectDelegate(internalSession);
     }}
 
     public Task OnSessionDisconnectAsync(Guid sessionId)
     {{
-        _sessions.TryRemove(sessionId, out _);
+        if(_sessions.TryRemove(sessionId, out var session))
+            return _disconnectDelegate(({1}Session)session);
         return Task.CompletedTask;
     }}
 

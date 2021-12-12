@@ -3,11 +3,13 @@ using System;
 using NetX.Options;
 using Microsoft.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using NetX.AutoServiceGenerator.Definitions;
+using Microsoft.Extensions.Logging;
 
 namespace {0};
 
-public partial class {1}
+public partial class {1} : ISessionListenerServer<{1}Session>
 {{
 
     private readonly RecyclableMemoryStreamManager manager;
@@ -17,7 +19,7 @@ public partial class {1}
     private INetXServer _netXServer;
     private {1}Processor _processor;
 
-    public {1}(string address, ushort port)
+    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, int receiveBufferSize = 1024, int sendBufferSize = 1024)
     {{
         _address = address;
         _port = port;
@@ -30,15 +32,15 @@ public partial class {1}
             MaximumFreeSmallPoolBytes = blockSize * 2048,
             MaximumFreeLargePoolBytes = maxBufferSize * 4
         }};
-        _processor = new {1}Processor(this, manager);
-        _netXServer = NetXServerBuilder.Create()
+        _processor = new {1}Processor(this, manager, OnSessionConnectAsync, OnSessionDisconnectAsync);
+        _netXServer = NetXServerBuilder.Create(loggerFactory, nameof({1}))
             .Processor(_processor)
             .EndPoint(_address, _port)
             .Duplex(true)
             .CopyBuffer(true)
             .NoDelay(true)
-            .ReceiveBufferSize(1024)
-            .SendBufferSize(1024)
+            .ReceiveBufferSize(receiveBufferSize)
+            .SendBufferSize(sendBufferSize)
             .Build();
     }}
 

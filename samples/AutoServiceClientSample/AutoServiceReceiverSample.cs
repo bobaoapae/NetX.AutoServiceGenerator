@@ -4,7 +4,7 @@ using AutoServiceClientSample.Definitions;
 
 namespace AutoServiceClientSample;
 
-public partial class AutoServiceClientSample : IAutoServiceClientSample
+public partial class AutoServiceReceiverSample : IAutoServiceReceiverSample
 {
     public Task<bool> ReceiveLink(ushort value)
     {

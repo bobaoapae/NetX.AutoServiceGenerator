@@ -14,11 +14,11 @@ public class Program
         await serviceManager.ConnectAsync(cancellationTokenSource.Token);
 
         Console.WriteLine($"Invoking AutoServiceServerSample.TryDoSomething(\"test\", 1000, 45, true)");
-        var result = await serviceManager.AutoServiceServerSample.TryDoSomething("test", 1000, 45, true);
+        var result = await serviceManager.AutoServiceSample.TryDoSomething("test", 1000, 45, true);
         
         Console.WriteLine($"Final Result: {result}");
 
-        var appendResult = await serviceManager.AutoServiceServerSample.AppendValues(1, 2, 3, new byte[] { 4, 5, 6, 7, 8, 9 });
+        var appendResult = await serviceManager.AutoServiceSample.AppendValues(1, 2, 3, new byte[] { 4, 5, 6, 7, 8, 9 });
         
         Console.WriteLine($"Append Result: {string.Join(",", appendResult)}");
 

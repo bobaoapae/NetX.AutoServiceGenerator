@@ -6,7 +6,7 @@ using AutoServiceServerSample.Definitions;
 
 namespace AutoServiceServerSample;
 
-public partial class AutoServiceServerSample : IAutoServiceServerSample
+public partial class AutoServiceSample : IAutoServiceSample
 {
     public async Task<bool> TryDoSomething(string value, int value2, short value3, bool value5)
     {
@@ -16,7 +16,7 @@ public partial class AutoServiceServerSample : IAutoServiceServerSample
         if (TryGetCallingSession(out var session))
         {
             Console.WriteLine($"Invoking AutoServiceClientSample.ReceiveLink({value3})");
-            result &= await session.AutoServiceClientSample.ReceiveLink(Convert.ToUInt16(value3));
+            result &= await session.AutoServiceReceiverSample.ReceiveLink(Convert.ToUInt16(value3));
         }
         else
         {

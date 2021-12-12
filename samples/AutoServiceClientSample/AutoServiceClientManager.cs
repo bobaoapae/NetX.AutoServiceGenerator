@@ -3,7 +3,7 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceClientSample;
 
-[AutoServiceConsumer(typeof(IAutoServiceServerSample))]
+[AutoServiceConsumer(typeof(IAutoServiceSample))]
 public partial class AutoServiceClientManager : IAutoServiceClientManager
 {
     

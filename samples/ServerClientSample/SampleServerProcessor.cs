@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using NetX;
 
@@ -6,15 +7,19 @@ namespace ServerClientSample
 {
     public class SampleServerProcessor : INetXServerProcessor
     {
-        public Task OnSessionConnectAsync(INetXSession session)
+        public async Task OnSessionConnectAsync(INetXSession session)
         {
             Console.WriteLine($"Session {session.Id} connected. Time = {session.ConnectionTime} Address = {session.RemoteAddress}");
 
-            return Task.CompletedTask;
+            await session.SendAsync(BitConverter.GetBytes(1));
+            await session.SendAsync(BitConverter.GetBytes(2));
+            await session.SendAsync(BitConverter.GetBytes(3));
         }
 
         public Task OnSessionDisconnectAsync(Guid sessionId)
         {
+            Console.WriteLine($"Session {sessionId} disconnected");
+
             return Task.CompletedTask;
         }
 

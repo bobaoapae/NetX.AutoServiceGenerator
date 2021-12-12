@@ -9,7 +9,7 @@ namespace ServerClientSample
     {
         public async Task OnConnectedAsync(INetXClientSession client)
         {
-            await client.SendAsync(Encoding.UTF8.GetBytes("Requisicao 1"));
+            //await client.SendAsync(Encoding.UTF8.GetBytes("Requisicao 1"));
         }
 
         public Task OnDisconnectedAsync()
@@ -17,17 +17,17 @@ namespace ServerClientSample
             return Task.CompletedTask;
         }
 
-        public async Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message)
+        public Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message)
         {
-            var messageId = message.Id;
-            var clientResponseBytes = Encoding.UTF8.GetBytes("Resposta final");
+            var recebeu = BitConverter.ToInt32(message.Buffer);
+            Console.WriteLine($"Received from server: {recebeu}");
 
-            await client.ReplyAsync(messageId, clientResponseBytes);
+            return Task.CompletedTask;
         }
 
         public int GetReceiveMessageSize(INetXClientSession client, in ArraySegment<byte> buffer)
         {
-            throw new NotImplementedException();
+            return 4;
         }
 
         public void ProcessReceivedBuffer(INetXClientSession client, in ArraySegment<byte> buffer)

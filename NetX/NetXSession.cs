@@ -13,7 +13,7 @@ namespace NetX
         public DateTime ConnectionTime { get; }
 
         public NetXSession(Socket socket, IPAddress remoteAddress, NetXServerOptions options) 
-            : base(socket, options)
+            : base(socket, options, false)
         {
             Id = Guid.NewGuid();
             RemoteAddress = remoteAddress;

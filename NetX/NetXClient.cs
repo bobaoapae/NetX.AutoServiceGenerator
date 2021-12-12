@@ -13,7 +13,7 @@ namespace NetX
         private readonly string _clientName;
 
         internal NetXClient(NetXClientOptions options, ILoggerFactory loggerFactory = null, string clientName = null)
-            : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), options)
+            : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), options, true)
         {
             _logger = loggerFactory?.CreateLogger<NetXClient>();
             _clientName = clientName ?? nameof(NetXClient);

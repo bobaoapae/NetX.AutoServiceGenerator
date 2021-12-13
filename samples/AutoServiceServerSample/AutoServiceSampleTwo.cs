@@ -39,4 +39,10 @@ public partial class AutoServiceSampleTwo : IAutoServiceSample
 
         return Task.FromResult(result);
     }
+
+    public Task MethodWithoutReturnValue(int value)
+    {
+        Console.WriteLine($"Invoked Service AutoServiceServerSampleTwo.MethodWithoutReturnValue({value});");
+        return Task.CompletedTask;
+    }
 }

@@ -21,6 +21,9 @@ public class Program
         var appendResult = await serviceManager.AutoServiceSample.AppendValues(1, 2, 3, new byte[] { 4, 5, 6, 7, 8, 9 });
         
         Console.WriteLine($"Append Result: {string.Join(",", appendResult)}");
+
+        Console.WriteLine($"Invoking AutoServiceServerSample.MethodWithoutReturnValue(1)");
+        await serviceManager.AutoServiceSample.MethodWithoutReturnValue(1);
         
         var serviceManagerTwo = new AutoServiceClientManagerTwo("127.0.0.1", 2001);
         await serviceManagerTwo.ConnectAsync(cancellationTokenSource.Token);

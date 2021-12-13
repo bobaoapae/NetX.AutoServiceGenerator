@@ -72,34 +72,42 @@ namespace NetX.AutoServiceGenerator
 
             var autoServiceClientConsumerResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceClientConsumer");
             var autoServiceClientConsumerMethodResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceClientConsumerMethod");
+            var autoServiceClientConsumerMethodResourceVoid = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceClientConsumerMethodVoid");
             var autoServiceServerResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServer");
             var autoServiceServerManagerResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerManager");
             var autoServiceServerManagerSessionResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerManagerSession");
             var autoServiceServerProcessorResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerProcessor");
             var autoServiceServerProcessorMethodProxyResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerProcessorMethodProxy");
+            var autoServiceServerProcessorMethodProxyResourceVoid = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerProcessorMethodProxyVoid");
 
             var autoServiceClientResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceClient");
             var autoServiceClientManagerResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceClientManager");
             var autoServiceClientManagerProcessorResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceClientManagerProcessor");
             var autoServiceClientManagerProcessorMethodProxyResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceClientManagerProcessorMethodProxy");
+            var autoServiceClientManagerProcessorMethodProxyResourceVoid = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceClientManagerProcessorMethodProxyVoid");
             var autoServiceServerConsumerResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceServerConsumer");
             var autoServiceServerConsumerMethodResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceServerConsumerMethod");
+            var autoServiceServerConsumerMethodResourceVoid = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceServerConsumerMethodVoid");
 
 
             if (
                 autoServiceClientConsumerResource == ""
                 || autoServiceClientConsumerMethodResource == ""
+                || autoServiceClientConsumerMethodResourceVoid == ""
                 || autoServiceServerResource == ""
                 || autoServiceServerManagerResource == ""
                 || autoServiceServerManagerSessionResource == ""
                 || autoServiceServerProcessorResource == ""
                 || autoServiceServerProcessorMethodProxyResource == ""
+                || autoServiceServerProcessorMethodProxyResourceVoid == ""
                 || autoServiceClientResource == ""
                 || autoServiceClientManagerResource == ""
                 || autoServiceClientManagerProcessorResource == ""
                 || autoServiceClientManagerProcessorMethodProxyResource == ""
+                || autoServiceClientManagerProcessorMethodProxyResourceVoid == ""
                 || autoServiceServerConsumerResource == ""
                 || autoServiceServerConsumerMethodResource == ""
+                || autoServiceServerConsumerMethodResourceVoid == ""
             )
                 return;
 
@@ -242,7 +250,7 @@ namespace NetX.AutoServiceGenerator
                             if (member is IMethodSymbol methodSymbol)
                             {
                                 var methodReturnType = methodSymbol.ReturnType;
-                                var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments[0];
+                                var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
                                 var writeParameters = new StringBuilder();
                                 var parameters = new StringBuilder();
                                 var readResult = new StringBuilder();
@@ -282,56 +290,59 @@ namespace NetX.AutoServiceGenerator
                                 var resultBufferVariableName = $"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_Buffer_Result";
                                 var offsetVariableName = $"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_Buffer_Result_Offset";
 
-                                if (AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnTypeGeneric))
+                                if (methodReturnTypeGeneric != null)
                                 {
-                                    if (methodReturnTypeGeneric is IArrayTypeSymbol arrayTypeSymbol)
+                                    if (AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnTypeGeneric))
                                     {
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int arraySize_{methodReturnTypeGeneric.Name});");
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"var {resultVariableName} = new {arrayTypeSymbol.ElementType}[arraySize_{methodReturnTypeGeneric.Name}]);");
+                                        if (methodReturnTypeGeneric is IArrayTypeSymbol arrayTypeSymbol)
+                                        {
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int arraySize_{methodReturnTypeGeneric.Name});");
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"var {resultVariableName} = new {arrayTypeSymbol.ElementType}[arraySize_{methodReturnTypeGeneric.Name}]);");
 
-                                        readResult.Append('\t', 3)
-                                            .AppendLine($"for (var x = 0; x < arraySize_{methodReturnTypeGeneric.Name}; x++)")
-                                            .Append('\t', 3).Append("{").AppendLine()
-                                            .Append('\t', 4).AppendLine($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}();")
-                                            .Append('\t', 4).AppendLine($"instance_{arrayTypeSymbol.ElementType}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
-                                            .Append('\t', 4).AppendLine($"{resultVariableName}[x] = instance_{arrayTypeSymbol.ElementType};")
-                                            .Append('\t', 3).AppendLine("}");
-                                    }
-                                    else if (AutoServiceUtils.IsList(methodReturnTypeGeneric))
-                                    {
-                                        var listTypeSymbol = ((INamedTypeSymbol)methodReturnTypeGeneric).TypeArguments[0];
+                                            readResult.Append('\t', 3)
+                                                .AppendLine($"for (var x = 0; x < arraySize_{methodReturnTypeGeneric.Name}; x++)")
+                                                .Append('\t', 3).Append("{").AppendLine()
+                                                .Append('\t', 4).AppendLine($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}();")
+                                                .Append('\t', 4).AppendLine($"instance_{arrayTypeSymbol.ElementType}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
+                                                .Append('\t', 4).AppendLine($"{resultVariableName}[x] = instance_{arrayTypeSymbol.ElementType};")
+                                                .Append('\t', 3).AppendLine("}");
+                                        }
+                                        else if (AutoServiceUtils.IsList(methodReturnTypeGeneric))
+                                        {
+                                            var listTypeSymbol = ((INamedTypeSymbol)methodReturnTypeGeneric).TypeArguments[0];
 
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int listSize_{methodReturnTypeGeneric.Name});");
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"var {resultVariableName} = new List<{listTypeSymbol}>(listSize_{methodReturnTypeGeneric.Name});");
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int listSize_{methodReturnTypeGeneric.Name});");
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"var {resultVariableName} = new List<{listTypeSymbol}>(listSize_{methodReturnTypeGeneric.Name});");
 
-                                        readResult.Append('\t', 3)
-                                            .AppendLine($"for (var x = 0; x < listSize_{methodReturnTypeGeneric.Name}; x++)")
-                                            .Append('\t', 3).Append("{").AppendLine()
-                                            .Append('\t', 4).AppendLine($"var instance_{listTypeSymbol} = new {listTypeSymbol}();")
-                                            .Append('\t', 4).AppendLine($"instance_{listTypeSymbol}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
-                                            .Append('\t', 4).AppendLine($"{resultVariableName}.Add(instance_{listTypeSymbol});")
-                                            .Append('\t', 3).AppendLine("}");
+                                            readResult.Append('\t', 3)
+                                                .AppendLine($"for (var x = 0; x < listSize_{methodReturnTypeGeneric.Name}; x++)")
+                                                .Append('\t', 3).Append("{").AppendLine()
+                                                .Append('\t', 4).AppendLine($"var instance_{listTypeSymbol} = new {listTypeSymbol}();")
+                                                .Append('\t', 4).AppendLine($"instance_{listTypeSymbol}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
+                                                .Append('\t', 4).AppendLine($"{resultVariableName}.Add(instance_{listTypeSymbol});")
+                                                .Append('\t', 3).AppendLine("}");
+                                        }
+                                        else
+                                        {
+                                            readResult
+                                                .Append('\t', 3).AppendLine($"var {resultVariableName} = new {methodReturnTypeGeneric}();")
+                                                .Append('\t', 3).AppendLine($"{resultVariableName}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});");
+                                        }
                                     }
                                     else
                                     {
                                         readResult
-                                            .Append('\t', 3).AppendLine($"var {resultVariableName} = new {methodReturnTypeGeneric}();")
-                                            .Append('\t', 3).AppendLine($"{resultVariableName}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});");
+                                            .Append('\t', 3)
+                                            .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out {methodReturnTypeGeneric} {resultVariableName});");
                                     }
-                                }
-                                else
-                                {
-                                    readResult
-                                        .Append('\t', 3)
-                                        .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out {methodReturnTypeGeneric} {resultVariableName});");
                                 }
 
                                 parameters.Length -= 2;
@@ -339,7 +350,8 @@ namespace NetX.AutoServiceGenerator
 
                                 serviceImplementations
                                     .Append('\t', 1)
-                                    .AppendLine(string.Format(autoServiceClientConsumerMethodResource, autoServiceClientConsumerInterface.Name, methodSymbol.Name, methodReturnType, methodReturnTypeGeneric, parameters, writeParameters, readResult, methodCode++));
+                                    .AppendLine(string.Format(methodReturnTypeGeneric != null ? autoServiceClientConsumerMethodResource : autoServiceClientConsumerMethodResourceVoid, autoServiceClientConsumerInterface.Name, methodSymbol.Name, methodReturnType, methodReturnTypeGeneric, parameters,
+                                        writeParameters, readResult, methodCode++));
                             }
                         }
 
@@ -451,36 +463,40 @@ namespace NetX.AutoServiceGenerator
                                 var methodReturnType = methodSymbol.ReturnType;
                                 var methodReturnGenericType = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
 
-                                var resultVariableName = $"{implementedServerService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name}_Result";
-
-                                if (methodReturnGenericType != null && AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnGenericType))
+                                if (methodReturnGenericType != null)
                                 {
-                                    if (methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType))
+                                    var resultVariableName = $"{implementedServerService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name}_Result";
+
+                                    if (AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnGenericType))
                                     {
-                                        var sizeProperty = methodReturnGenericType is IArrayTypeSymbol ? "Length" : "Count";
-                                        writeResult
-                                            .AppendLine($"stream.ExWrite({resultVariableName}.{sizeProperty});");
-                                        writeResult.Append('\t', 3)
-                                            .AppendLine($"for (var x = 0; x < {resultVariableName}.{sizeProperty}; x++)")
-                                            .Append('\t', 3).Append("{").AppendLine()
-                                            .Append('\t', 4).Append($"{resultVariableName}[x].Serialize(stream);")
-                                            .Append('\t', 3).Append("}").AppendLine();
+                                        if (methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType))
+                                        {
+                                            var sizeProperty = methodReturnGenericType is IArrayTypeSymbol ? "Length" : "Count";
+                                            writeResult
+                                                .AppendLine($"stream.ExWrite({resultVariableName}.{sizeProperty});");
+                                            writeResult.Append('\t', 3)
+                                                .AppendLine($"for (var x = 0; x < {resultVariableName}.{sizeProperty}; x++)")
+                                                .Append('\t', 3).Append("{").AppendLine()
+                                                .Append('\t', 4).Append($"{resultVariableName}[x].Serialize(stream);")
+                                                .Append('\t', 3).Append("}").AppendLine();
+                                        }
+                                        else
+                                        {
+                                            writeResult.Append($"{resultVariableName}.Serialize(stream);");
+                                        }
                                     }
                                     else
                                     {
-                                        writeResult.Append($"{resultVariableName}.Serialize(stream);");
+                                        writeResult.Append($"stream.ExWrite({resultVariableName});");
                                     }
-                                }
-                                else
-                                {
-                                    writeResult.Append($"stream.ExWrite({resultVariableName});");
                                 }
 
                                 parameters.Length -= 2;
 
                                 autoServiceServerProcessorProxies
                                     .Append('\t')
-                                    .AppendLine(string.Format(autoServiceServerProcessorMethodProxyResource, implementedServerService.Name, interfaceServer.Name, methodCode, methodSymbol.Name, autoServiceServerManagerName, implementedServerService.Name.DeCapitalize(), readParameters, parameters,
+                                    .AppendLine(string.Format(methodReturnGenericType != null ? autoServiceServerProcessorMethodProxyResource : autoServiceServerProcessorMethodProxyResourceVoid, implementedServerService.Name, interfaceServer.Name, methodCode, methodSymbol.Name,
+                                        autoServiceServerManagerName, implementedServerService.Name.DeCapitalize(), readParameters, parameters,
                                         writeResult));
 
                                 methodCode++;
@@ -633,7 +649,7 @@ namespace NetX.AutoServiceGenerator
                             if (member is IMethodSymbol methodSymbol)
                             {
                                 var methodReturnType = methodSymbol.ReturnType;
-                                var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments[0];
+                                var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
                                 var writeParameters = new StringBuilder();
                                 var parameters = new StringBuilder();
                                 var readResult = new StringBuilder();
@@ -674,56 +690,59 @@ namespace NetX.AutoServiceGenerator
                                 var resultBufferVariableName = $"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_Buffer_Result";
                                 var offsetVariableName = $"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_Buffer_Result_Offset";
 
-                                if (AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnTypeGeneric))
+                                if (methodReturnTypeGeneric != null)
                                 {
-                                    if (methodReturnTypeGeneric is IArrayTypeSymbol arrayTypeSymbol)
+                                    if (AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnTypeGeneric))
                                     {
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int arraySize_{methodReturnTypeGeneric.Name});");
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"var {resultVariableName} = new {arrayTypeSymbol.ElementType}[arraySize_{methodReturnTypeGeneric.Name}]);");
+                                        if (methodReturnTypeGeneric is IArrayTypeSymbol arrayTypeSymbol)
+                                        {
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int arraySize_{methodReturnTypeGeneric.Name});");
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"var {resultVariableName} = new {arrayTypeSymbol.ElementType}[arraySize_{methodReturnTypeGeneric.Name}]);");
 
-                                        readResult.Append('\t', 3)
-                                            .AppendLine($"for (var x = 0; x < arraySize_{methodReturnTypeGeneric.Name}; x++)")
-                                            .Append('\t', 3).Append("{").AppendLine()
-                                            .Append('\t', 4).Append($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}();")
-                                            .Append('\t', 4).Append($"instance_{arrayTypeSymbol.ElementType}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
-                                            .Append('\t', 4).Append($"{resultVariableName}[x] = instance_{arrayTypeSymbol.ElementType};")
-                                            .Append('\t', 3).Append("}").AppendLine();
-                                    }
-                                    else if (AutoServiceUtils.IsList(methodReturnTypeGeneric))
-                                    {
-                                        var listTypeSymbol = ((INamedTypeSymbol)methodReturnTypeGeneric).TypeArguments[0];
+                                            readResult.Append('\t', 3)
+                                                .AppendLine($"for (var x = 0; x < arraySize_{methodReturnTypeGeneric.Name}; x++)")
+                                                .Append('\t', 3).Append("{").AppendLine()
+                                                .Append('\t', 4).Append($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}();")
+                                                .Append('\t', 4).Append($"instance_{arrayTypeSymbol.ElementType}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
+                                                .Append('\t', 4).Append($"{resultVariableName}[x] = instance_{arrayTypeSymbol.ElementType};")
+                                                .Append('\t', 3).Append("}").AppendLine();
+                                        }
+                                        else if (AutoServiceUtils.IsList(methodReturnTypeGeneric))
+                                        {
+                                            var listTypeSymbol = ((INamedTypeSymbol)methodReturnTypeGeneric).TypeArguments[0];
 
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int listSize_{methodReturnTypeGeneric.Name});");
-                                        readResult
-                                            .Append('\t', 3)
-                                            .AppendLine($"var {resultVariableName} = new List<{listTypeSymbol}>(listSize_{methodReturnTypeGeneric.Name});");
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int listSize_{methodReturnTypeGeneric.Name});");
+                                            readResult
+                                                .Append('\t', 3)
+                                                .AppendLine($"var {resultVariableName} = new List<{listTypeSymbol}>(listSize_{methodReturnTypeGeneric.Name});");
 
-                                        readResult.Append('\t', 3)
-                                            .AppendLine($"for (var x = 0; x < listSize_{methodReturnTypeGeneric.Name}; x++)")
-                                            .Append('\t', 3).Append("{").AppendLine()
-                                            .Append('\t', 4).AppendLine($"var instance_{listTypeSymbol} = new {listTypeSymbol}();")
-                                            .Append('\t', 4).AppendLine($"instance_{listTypeSymbol}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
-                                            .Append('\t', 4).AppendLine($"{resultVariableName}.Add(instance_{listTypeSymbol});")
-                                            .Append('\t', 3).AppendLine("}");
+                                            readResult.Append('\t', 3)
+                                                .AppendLine($"for (var x = 0; x < listSize_{methodReturnTypeGeneric.Name}; x++)")
+                                                .Append('\t', 3).Append("{").AppendLine()
+                                                .Append('\t', 4).AppendLine($"var instance_{listTypeSymbol} = new {listTypeSymbol}();")
+                                                .Append('\t', 4).AppendLine($"instance_{listTypeSymbol}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});")
+                                                .Append('\t', 4).AppendLine($"{resultVariableName}.Add(instance_{listTypeSymbol});")
+                                                .Append('\t', 3).AppendLine("}");
+                                        }
+                                        else
+                                        {
+                                            readResult
+                                                .Append('\t', 3).Append($"var {resultVariableName} = new {methodReturnTypeGeneric}();")
+                                                .Append('\t', 3).Append($"{resultVariableName}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});");
+                                        }
                                     }
                                     else
                                     {
                                         readResult
-                                            .Append('\t', 3).Append($"var {resultVariableName} = new {methodReturnTypeGeneric}();")
-                                            .Append('\t', 3).Append($"{resultVariableName}.Deserialize(in {resultBufferVariableName}, ref {offsetVariableName});");
+                                            .Append('\t', 3)
+                                            .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out {methodReturnTypeGeneric} {resultVariableName});");
                                     }
-                                }
-                                else
-                                {
-                                    readResult
-                                        .Append('\t', 3)
-                                        .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out {methodReturnTypeGeneric} {resultVariableName});");
                                 }
 
                                 parameters.Length -= 2;
@@ -731,7 +750,8 @@ namespace NetX.AutoServiceGenerator
 
                                 serviceImplementations
                                     .Append('\t', 1)
-                                    .AppendLine(string.Format(autoServiceServerConsumerMethodResource, autoServiceServerConsumerInterface.Name, methodSymbol.Name, methodReturnType, methodReturnTypeGeneric, parameters, writeParameters, readResult, methodCode++));
+                                    .AppendLine(string.Format(methodReturnTypeGeneric != null ? autoServiceServerConsumerMethodResource : autoServiceServerConsumerMethodResourceVoid, autoServiceServerConsumerInterface.Name, methodSymbol.Name, methodReturnType, methodReturnTypeGeneric, parameters,
+                                        writeParameters, readResult, methodCode++));
                             }
                         }
 
@@ -843,36 +863,40 @@ namespace NetX.AutoServiceGenerator
                                 var methodReturnType = methodSymbol.ReturnType;
                                 var methodReturnGenericType = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
 
-                                var resultVariableName = $"{implementedService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name}_Result";
-
-                                if (methodReturnGenericType != null && AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnGenericType))
+                                if (methodReturnGenericType != null)
                                 {
-                                    if (methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType))
+                                    var resultVariableName = $"{implementedService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name}_Result";
+
+                                    if (AutoServiceUtils.NeedUseAutoSerializeOrDeserialize(methodReturnGenericType))
                                     {
-                                        var sizeProperty = methodReturnGenericType is IArrayTypeSymbol ? "Length" : "Count";
-                                        writeResult
-                                            .AppendLine($"stream.ExWrite({resultVariableName}.{sizeProperty});");
-                                        writeResult.Append('\t', 3)
-                                            .AppendLine($"for (var x = 0; x < {resultVariableName}.{sizeProperty}; x++)")
-                                            .Append('\t', 3).Append("{").AppendLine()
-                                            .Append('\t', 4).Append($"{resultVariableName}[x].Serialize(stream);")
-                                            .Append('\t', 3).Append("}").AppendLine();
+                                        if (methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType))
+                                        {
+                                            var sizeProperty = methodReturnGenericType is IArrayTypeSymbol ? "Length" : "Count";
+                                            writeResult
+                                                .AppendLine($"stream.ExWrite({resultVariableName}.{sizeProperty});");
+                                            writeResult.Append('\t', 3)
+                                                .AppendLine($"for (var x = 0; x < {resultVariableName}.{sizeProperty}; x++)")
+                                                .Append('\t', 3).Append("{").AppendLine()
+                                                .Append('\t', 4).Append($"{resultVariableName}[x].Serialize(stream);")
+                                                .Append('\t', 3).Append("}").AppendLine();
+                                        }
+                                        else
+                                        {
+                                            writeResult.Append($"{resultVariableName}.Serialize(stream);");
+                                        }
                                     }
                                     else
                                     {
-                                        writeResult.Append($"{resultVariableName}.Serialize(stream);");
+                                        writeResult.Append($"stream.ExWrite({resultVariableName});");
                                     }
-                                }
-                                else
-                                {
-                                    writeResult.Append($"stream.ExWrite({resultVariableName});");
                                 }
 
                                 parameters.Length -= 2;
 
                                 autoServiceClientProcessorProxies
                                     .Append('\t')
-                                    .AppendLine(string.Format(autoServiceClientManagerProcessorMethodProxyResource, implementedService.Name, interfaceServer.Name, methodCode, methodSymbol.Name, implementedService.Name.DeCapitalize(), readParameters, parameters, writeResult));
+                                    .AppendLine(string.Format(methodReturnGenericType != null ? autoServiceClientManagerProcessorMethodProxyResource : autoServiceClientManagerProcessorMethodProxyResourceVoid, implementedService.Name, interfaceServer.Name, methodCode, methodSymbol.Name,
+                                        implementedService.Name.DeCapitalize(), readParameters, parameters, writeResult));
 
                                 methodCode++;
                             }

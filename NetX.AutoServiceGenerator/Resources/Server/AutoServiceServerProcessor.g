@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using AutoSerializer.Definitions;
 using NetX.AutoServiceGenerator.Definitions;
 {6}
 

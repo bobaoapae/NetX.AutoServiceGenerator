@@ -5,6 +5,7 @@ using Microsoft.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using AutoSerializer.Definitions;
 using NetX.AutoServiceGenerator.Definitions;
 {6}
 

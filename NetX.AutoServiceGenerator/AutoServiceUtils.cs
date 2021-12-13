@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -110,29 +111,50 @@ namespace NetX.AutoServiceGenerator
                 {
                     return true;
                 }
+
                 if (namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoSerializeAttribute") && namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoDeserializeAttribute"))
                 {
                     return true;
+                }
+
+                if (IsList(namedTypeSymbol))
+                {
+                    return IsValidTypeForArgumentOrReturn(namedTypeSymbol.TypeArguments[0]);
                 }
             }
             else if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
             {
                 return IsValidTypeForArgumentOrReturn(arrayTypeSymbol.ElementType);
             }
+            
             return false;
         }
 
         public static bool NeedUseAutoSerializeOrDeserialize(ITypeSymbol typeSymbol)
         {
-            if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoSerializeAttribute") && namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoDeserializeAttribute"))
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
-                return true;
+                if (namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoSerializeAttribute") && namedTypeSymbol.GetAttributes().Any(symbol => symbol.AttributeClass?.Name is "AutoDeserializeAttribute"))
+                {
+                    return true;
+                }
+
+                if (IsList(namedTypeSymbol))
+                {
+                    return NeedUseAutoSerializeOrDeserialize(namedTypeSymbol.TypeArguments[0]);
+                }
             }
             else if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
             {
                 return NeedUseAutoSerializeOrDeserialize(arrayTypeSymbol.ElementType);
             }
+            
             return false;
+        }
+
+        public static bool IsList(ITypeSymbol typeSymbol)
+        {
+            return typeSymbol.Name == "List";
         }
 
         public static string Capitalize(this string source)

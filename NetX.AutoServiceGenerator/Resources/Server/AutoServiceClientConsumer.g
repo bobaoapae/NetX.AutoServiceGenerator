@@ -1,6 +1,7 @@
 using System;
 using Microsoft.IO;
 using System.Threading.Tasks;
+using AutoSerializer.Definitions;
 using NetX.AutoServiceGenerator.Definitions;
 using {3};
 

@@ -59,7 +59,7 @@ namespace NetX.AutoServiceGenerator
                         "ASG0001",
                         "Missing reference to NetX.AutoServiceGenerator.Definitions",
                         "Missing reference to NetX.AutoServiceGenerator.Definitions",
-                        "",
+                        "AutoServiceGenerator",
                         DiagnosticSeverity.Error,
                         true),
                     null));
@@ -159,9 +159,9 @@ namespace NetX.AutoServiceGenerator
                             return;
                         }
 
-                        foreach (var member in implementedServerService.GetMembers())
+                        foreach (var member in implementedServerService.Interfaces[0].GetMembers())
                         {
-                            if (member is IMethodSymbol methodSymbol && methodSymbol.MethodKind != MethodKind.Constructor)
+                            if (member is IMethodSymbol methodSymbol)
                             {
                                 var methodReturnType = methodSymbol.ReturnType;
 
@@ -172,26 +172,29 @@ namespace NetX.AutoServiceGenerator
                                             "ASG0005",
                                             "Method return type must be Task or ValueTask",
                                             "Method return type must be Task or ValueTask",
-                                            "",
+                                            "AutoServiceGenerator",
                                             DiagnosticSeverity.Error,
                                             true),
                                         methodSymbol.Locations[0]));
                                     return;
                                 }
 
-                                var methodReturnTypeGeneric = ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0];
-                                if (!AutoServiceUtils.IsValidTypeForArgumentOrReturn(methodReturnTypeGeneric))
+                                if (((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments.Length == 1)
                                 {
-                                    context.ReportDiagnostic(Diagnostic.Create(
-                                        new DiagnosticDescriptor(
-                                            "ASG0006",
-                                            $"Non supported generic type <{methodReturnTypeGeneric}>",
-                                            $"Non supported generic type <{methodReturnTypeGeneric}>",
-                                            "",
-                                            DiagnosticSeverity.Error,
-                                            true),
-                                        methodSymbol.Locations[0]));
-                                    return;
+                                    var methodReturnTypeGeneric = ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0];
+                                    if (!AutoServiceUtils.IsValidTypeForArgumentOrReturn(methodReturnTypeGeneric))
+                                    {
+                                        context.ReportDiagnostic(Diagnostic.Create(
+                                            new DiagnosticDescriptor(
+                                                "ASG0006",
+                                                $"Non supported generic type <{methodReturnTypeGeneric}>",
+                                                $"Non supported generic type <{methodReturnTypeGeneric}>",
+                                                "AutoServiceGenerator",
+                                                DiagnosticSeverity.Error,
+                                                true),
+                                            methodSymbol.Locations[0]));
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -301,7 +304,7 @@ namespace NetX.AutoServiceGenerator
                                     else if (AutoServiceUtils.IsList(methodReturnTypeGeneric))
                                     {
                                         var listTypeSymbol = ((INamedTypeSymbol)methodReturnTypeGeneric).TypeArguments[0];
-                                        
+
                                         readResult
                                             .Append('\t', 3)
                                             .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int listSize_{methodReturnTypeGeneric.Name});");
@@ -412,7 +415,7 @@ namespace NetX.AutoServiceGenerator
                                         else if (AutoServiceUtils.IsList(parameterSymbol.Type))
                                         {
                                             var listTypeSymbol = ((INamedTypeSymbol)parameterSymbol.Type).TypeArguments[0];
-                                        
+
                                             readParameters
                                                 .Append('\t', 2)
                                                 .AppendLine($"inputBuffer.Read(ref offset, out int listSize_{parameterSymbol.Name});");
@@ -509,7 +512,7 @@ namespace NetX.AutoServiceGenerator
                                 "ASG0007",
                                 "This service is already provided by another manager, just one of theses will be available",
                                 "This service is already provided by another manager, just one of theses will be available",
-                                "",
+                                "AutoServiceGenerator",
                                 DiagnosticSeverity.Warning,
                                 true),
                             autoServiceClientManager.Locations[0]));
@@ -524,7 +527,7 @@ namespace NetX.AutoServiceGenerator
                                 "ASG0004",
                                 "Class need to be partial",
                                 "Class need to be partial",
-                                "",
+                                "AutoServiceGenerator",
                                 DiagnosticSeverity.Error,
                                 true),
                             autoServiceClientManager.Locations[0]));
@@ -542,14 +545,14 @@ namespace NetX.AutoServiceGenerator
                                     "ASG0004",
                                     "Class need to be partial",
                                     "Class need to be partial",
-                                    "",
+                                    "AutoServiceGenerator",
                                     DiagnosticSeverity.Error,
                                     true),
                                 implementedServerService.Locations[0]));
                             return;
                         }
 
-                        foreach (var member in implementedServerService.GetMembers())
+                        foreach (var member in implementedServerService.Interfaces[0].GetMembers())
                         {
                             if (member is IMethodSymbol methodSymbol && methodSymbol.MethodKind != MethodKind.Constructor)
                             {
@@ -562,26 +565,29 @@ namespace NetX.AutoServiceGenerator
                                             "ASG0005",
                                             "Method return type must be Task or ValueTask",
                                             "Method return type must be Task or ValueTask",
-                                            "",
+                                            "AutoServiceGenerator",
                                             DiagnosticSeverity.Error,
                                             true),
                                         methodSymbol.Locations[0]));
                                     return;
                                 }
 
-                                var methodReturnTypeGeneric = ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0];
-                                if (!AutoServiceUtils.IsValidTypeForArgumentOrReturn(methodReturnTypeGeneric))
+                                if (((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments.Length == 1)
                                 {
-                                    context.ReportDiagnostic(Diagnostic.Create(
-                                        new DiagnosticDescriptor(
-                                            "ASG0006",
-                                            $"Non supported generic type <{methodReturnTypeGeneric}>",
-                                            $"Non supported generic type <{methodReturnTypeGeneric}>",
-                                            "",
-                                            DiagnosticSeverity.Error,
-                                            true),
-                                        methodSymbol.Locations[0]));
-                                    return;
+                                    var methodReturnTypeGeneric = ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0];
+                                    if (!AutoServiceUtils.IsValidTypeForArgumentOrReturn(methodReturnTypeGeneric))
+                                    {
+                                        context.ReportDiagnostic(Diagnostic.Create(
+                                            new DiagnosticDescriptor(
+                                                "ASG0006",
+                                                $"Non supported generic type <{methodReturnTypeGeneric}>",
+                                                $"Non supported generic type <{methodReturnTypeGeneric}>",
+                                                "AutoServiceGenerator",
+                                                DiagnosticSeverity.Error,
+                                                true),
+                                            methodSymbol.Locations[0]));
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -690,7 +696,7 @@ namespace NetX.AutoServiceGenerator
                                     else if (AutoServiceUtils.IsList(methodReturnTypeGeneric))
                                     {
                                         var listTypeSymbol = ((INamedTypeSymbol)methodReturnTypeGeneric).TypeArguments[0];
-                                        
+
                                         readResult
                                             .Append('\t', 3)
                                             .AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int listSize_{methodReturnTypeGeneric.Name});");
@@ -801,7 +807,7 @@ namespace NetX.AutoServiceGenerator
                                         else if (AutoServiceUtils.IsList(parameterSymbol.Type))
                                         {
                                             var listTypeSymbol = ((INamedTypeSymbol)parameterSymbol.Type).TypeArguments[0];
-                                        
+
                                             readParameters
                                                 .Append('\t', 2)
                                                 .AppendLine($"inputBuffer.Read(ref offset, out int listSize_{parameterSymbol.Name});");

@@ -10,35 +10,6 @@ namespace NetX.AutoServiceGenerator
 {
     public static class AutoServiceUtils
     {
-        public static Dictionary<INamedTypeSymbol, List<INamedTypeSymbol>> GetAllClassAndSubTypesWithAttribute(List<INamedTypeSymbol> candidateClasses, INamedTypeSymbol attribute, bool includeSelf = false)
-        {
-            var result = new Dictionary<INamedTypeSymbol, List<INamedTypeSymbol>>(SymbolEqualityComparer.Default);
-            foreach (var classSymbol in candidateClasses)
-            {
-                var handlerCollection = classSymbol?.GetAttributes().FirstOrDefault(ad => ad.AttributeClass?.Name == attribute.Name);
-                if (handlerCollection != null)
-                {
-                    if (includeSelf)
-                    {
-                        result.Add(classSymbol, new List<INamedTypeSymbol> { classSymbol });
-                    }
-                    else
-                    {
-                        result.Add(classSymbol, new List<INamedTypeSymbol>());
-                    }
-                }
-            }
-
-            foreach (var classSymbol in candidateClasses)
-            {
-                var baseType = classSymbol?.BaseType;
-                if (baseType != null && result.ContainsKey(baseType))
-                    result[baseType].Add(classSymbol);
-            }
-
-            return result;
-        }
-
         public static List<INamedTypeSymbol> GetAllClassWithInterface(List<INamedTypeSymbol> candidateClasses, INamedTypeSymbol interfaceType)
         {
             var result = new List<INamedTypeSymbol>();
@@ -46,24 +17,6 @@ namespace NetX.AutoServiceGenerator
             {
                 if (classSymbol?.Interfaces.Any(symbol => symbol.Name == interfaceType.Name) ?? false)
                     result.Add(classSymbol);
-            }
-
-            return result;
-        }
-
-        public static List<INamedTypeSymbol> GetAllClassWithInterfaceWithAttribute(List<INamedTypeSymbol> candidateClasses, INamedTypeSymbol attribute)
-        {
-            var result = new List<INamedTypeSymbol>();
-            foreach (var classSymbol in candidateClasses)
-            {
-                foreach (var classSymbolInterface in classSymbol.Interfaces)
-                {
-                    if (classSymbolInterface.GetAttributes().Any(data => data.AttributeClass?.Name == attribute.Name))
-                    {
-                        result.Add(classSymbol);
-                        break;
-                    }
-                }
             }
 
             return result;
@@ -83,7 +36,7 @@ namespace NetX.AutoServiceGenerator
             return false;
         }
 
-        public static string GetResource(Assembly assembly, GeneratorExecutionContext context, string resourceName)
+        public static string GetResource(Assembly assembly, SourceProductionContext context, string resourceName)
         {
             using (var resourceStream = assembly.GetManifestResourceStream($"NetX.AutoServiceGenerator.Resources.{resourceName}.g"))
             {

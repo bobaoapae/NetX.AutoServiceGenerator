@@ -5,8 +5,9 @@ using Microsoft.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using AutoSerializer.Definitions;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using NetX.AutoServiceGenerator.Definitions;
 {6}
 
@@ -25,12 +26,14 @@ public class {1}Processor : INetXServerProcessor
 
     private AsyncLocal<{1}Session> _currentSession;
 
-    private {1} _autoServerManager;
-    private RecyclableMemoryStreamManager _streamManager;
-    private ConnectDelegate _connectDelegate;
-    private DisconnectDelegate _disconnectDelegate;
+    private readonly {1} _autoServerManager;
+    private readonly RecyclableMemoryStreamManager _streamManager;
+    private readonly ConnectDelegate _connectDelegate;
+    private readonly DisconnectDelegate _disconnectDelegate;
+    private readonly ILogger _logger;
+    private readonly string _identity;
 
-    public {1}Processor({1} autoServerManager, RecyclableMemoryStreamManager streamManager, ConnectDelegate connectDelegate, DisconnectDelegate disconnectDelegate)
+    public {1}Processor({1} autoServerManager, RecyclableMemoryStreamManager streamManager, ILogger logger, string identity, ConnectDelegate connectDelegate, DisconnectDelegate disconnectDelegate)
     {{
         _currentSession = new AsyncLocal<{1}Session>();
         _autoServerManager = autoServerManager;
@@ -38,6 +41,8 @@ public class {1}Processor : INetXServerProcessor
         _serviceProxies = new Dictionary<string, Dictionary<ushort, InternalProxy>>();
         _connectDelegate = connectDelegate;
         _disconnectDelegate = disconnectDelegate;
+        _logger = logger;
+        _identity = identity;
         _sessions = new ConcurrentDictionary<Guid, {1}Session>();
         InitializeServices();
         LoadProxys();
@@ -69,17 +74,24 @@ public class {1}Processor : INetXServerProcessor
 
     public Task OnSessionConnectAsync(INetXSession session)
     {{
-        var internalSession = new {1}Session(session, _streamManager);
+        var internalSession = new {1}Session(session, _logger, _streamManager);
         if(!_sessions.TryAdd(session.Id, internalSession))
+        {{
+            _logger?.LogError("{{identity}}: Fail on add session ({{sessionId}}) to processor session list", _identity, session.Id);
             session.Disconnect();
+        }}
+            
         return _connectDelegate(internalSession);
     }}
 
     public Task OnSessionDisconnectAsync(Guid sessionId)
     {{
-        if(_sessions.TryRemove(sessionId, out var session))
-            return _disconnectDelegate(({1}Session)session);
-        return Task.CompletedTask;
+        if(!_sessions.TryRemove(sessionId, out var session))
+        {{
+            _logger?.LogError("{{identity}}: Fail on remove session ({{sessionId}}) from processor session list", _identity, sessionId);
+            return Task.CompletedTask;
+        }}
+        return _disconnectDelegate(({1}Session)session);
     }}
 
     public Task OnReceivedMessageAsync(INetXSession session, NetXMessage message)
@@ -93,7 +105,24 @@ public class {1}Processor : INetXServerProcessor
         Task.Run(async () =>
         {{
             if(!_sessions.TryGetValue(session.Id, out var autoServiceSession))
+            {{
+                _logger?.LogError("{{identity}}: Received request but session ({{sessionId}}) was not found on processor session list", _identity, session.Id);
                 session.Disconnect();
+                return;
+            }}
+
+            if(!_serviceProxies.ContainsKey(interfaceCode))
+            {{
+                _logger?.LogWarning("{{identity}}: Received request to unregistered service ({{interfaceCode}})", _identity, interfaceCode);
+                return;
+            }}
+
+            if(!_serviceProxies[interfaceCode].ContainsKey(methodCode))
+            {{
+                _logger?.LogWarning("{{identity}}: Received invalid method ({{methodCode}}) request to service ({{interfaceCode}}) ", _identity, interfaceCode, methodCode);
+                return;
+            }}
+               
             await _serviceProxies[interfaceCode][methodCode](autoServiceSession, message, offset);
         }});
         

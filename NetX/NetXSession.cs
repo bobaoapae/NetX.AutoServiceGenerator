@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetX.Options;
 
 namespace NetX
@@ -12,8 +13,8 @@ namespace NetX
         public IPAddress RemoteAddress { get; }
         public DateTime ConnectionTime { get; }
 
-        public NetXSession(Socket socket, IPAddress remoteAddress, NetXServerOptions options) 
-            : base(socket, options, false)
+        public NetXSession(Socket socket, IPAddress remoteAddress, NetXServerOptions options, string serverName, ILogger logger) 
+            : base(socket, options, serverName, logger, false)
         {
             Id = Guid.NewGuid();
             RemoteAddress = remoteAddress;

@@ -9,13 +9,11 @@ namespace NetX
 {
     public class NetXClient : NetXConnection, INetXClient
     {
-        private readonly ILogger _logger;
         private readonly string _clientName;
 
         internal NetXClient(NetXClientOptions options, ILoggerFactory loggerFactory = null, string clientName = null)
-            : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), options, true)
+            : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), options, clientName, loggerFactory?.CreateLogger<NetXClient>(), true)
         {
-            _logger = loggerFactory?.CreateLogger<NetXClient>();
             _clientName = clientName ?? nameof(NetXClient);
             _socket.NoDelay = _options.NoDelay;
             _socket.LingerState = new LingerOption(true, 5);

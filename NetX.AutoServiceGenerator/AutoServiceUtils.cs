@@ -36,6 +36,20 @@ namespace NetX.AutoServiceGenerator
             return false;
         }
 
+        public static bool CheckClassIsPublic(INamedTypeSymbol namedTypeSymbol)
+        {
+            foreach (var declaringSyntaxReference in namedTypeSymbol.DeclaringSyntaxReferences)
+            {
+                foreach (var syntaxToken in ((ClassDeclarationSyntax)declaringSyntaxReference.GetSyntax()).Modifiers)
+                {
+                    if (syntaxToken.Text == "public")
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         public static string GetResource(Assembly assembly, SourceProductionContext context, string resourceName)
         {
             using (var resourceStream = assembly.GetManifestResourceStream($"NetX.AutoServiceGenerator.Resources.{resourceName}.g"))

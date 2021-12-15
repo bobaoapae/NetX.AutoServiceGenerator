@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using NetX;
+using Serilog;
 
 namespace ServerClientSample
 {
@@ -19,9 +20,6 @@ namespace ServerClientSample
 
         public Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message)
         {
-            var recebeu = BitConverter.ToInt32(message.Buffer);
-            Console.WriteLine($"Received from server: {recebeu}");
-
             return Task.CompletedTask;
         }
 

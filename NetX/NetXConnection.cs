@@ -8,6 +8,7 @@ using System;
 using NetX.Options;
 using System.Collections.Concurrent;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace NetX
 {
@@ -16,12 +17,16 @@ namespace NetX
         protected readonly Socket _socket;
         protected readonly NetXConnectionOptions _options;
 
+        protected readonly string _appName;
+        protected readonly ILogger _logger;
+
         private readonly Pipe _sendPipe;
         private readonly Pipe _receivePipe;
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<ArraySegment<byte>>> _completions;
 
         private byte[] _recvBuffer;
         private byte[] _sendBuffer;
+        private CancellationTokenSource _cancellationTokenSource;
 
         private readonly bool _reuseSocket;
 
@@ -31,10 +36,13 @@ namespace NetX
         private static readonly byte[] _emptyGuid = Guid.Empty.ToByteArray();
         private static readonly ArrayPool<byte> _bufferPool = ArrayPool<byte>.Shared;
 
-        public NetXConnection(Socket socket, NetXConnectionOptions options, bool reuseSocket = false)
+        public NetXConnection(Socket socket, NetXConnectionOptions options, string name, ILogger logger, bool reuseSocket = false)
         {
             _socket = socket;
             _options = options;
+
+            _appName = name;
+            _logger = logger;
 
             _sendPipe = new Pipe();
             _receivePipe = new Pipe();
@@ -231,15 +239,18 @@ namespace NetX
 
         internal async Task ProcessConnection(CancellationToken cancellationToken = default)
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            cancellationToken.Register(() => _cancellationTokenSource.Cancel());
+
             _recvBuffer = _bufferPool.Rent(_options.RecvBufferSize + sizeof(int));
             try
             {
                 _sendBuffer = _bufferPool.Rent(_options.SendBufferSize + sizeof(int));
                 try
                 {
-                    var writing = FillPipeAsync(cancellationToken);
-                    var reading = ReadPipeAsync(cancellationToken);
-                    var sending = SendPipeAsync(cancellationToken);
+                    var writing = FillPipeAsync(_cancellationTokenSource.Token);
+                    var reading = ReadPipeAsync(_cancellationTokenSource.Token);
+                    var sending = SendPipeAsync(_cancellationTokenSource.Token);
 
                     await Task.WhenAll(writing, reading, sending);
                 }
@@ -256,6 +267,7 @@ namespace NetX
 
         public void Disconnect()
         {
+            _cancellationTokenSource.Cancel();
             if (_socket.Connected)
             {
                 _socket.Shutdown(SocketShutdown.Both);
@@ -265,7 +277,7 @@ namespace NetX
 
         private async Task FillPipeAsync(CancellationToken cancellationToken)
         {
-            const int minimumBufferSize = 126;
+            const int minimumBufferSize = 512;
 
             try
             {
@@ -289,7 +301,7 @@ namespace NetX
                     _receivePipe.Writer.Advance(bytesRead);
 
                     // Make the data available to the PipeReader.
-                    FlushResult result = await _receivePipe.Writer.FlushAsync();
+                    FlushResult result = await _receivePipe.Writer.FlushAsync(cancellationToken);
 
                     if (result.IsCanceled || result.IsCompleted)
                     {
@@ -319,12 +331,12 @@ namespace NetX
                     if (result.IsCanceled || result.IsCompleted)
                         break;
 
-                    if (buffer.Length > _recvBuffer.Length)
-                        throw new Exception($"Recv Buffer is too small. RecvBuffLen = {_recvBuffer.Length} ReceivedLen = {buffer.Length}");
-
                     while (TryGetRecvMessage(ref buffer, out var message))
                     {
-                        await OnReceivedMessageAsync(message);
+                        if (message.HasValue)
+                        {
+                            await OnReceivedMessageAsync(message.Value);
+                        }
                     }
 
                     _receivePipe.Reader.AdvanceTo(buffer.Start, buffer.End);
@@ -338,27 +350,34 @@ namespace NetX
             }
         }
 
-        private bool TryGetRecvMessage(ref ReadOnlySequence<byte> buffer, out NetXMessage message)
+        private bool TryGetRecvMessage(ref ReadOnlySequence<byte> buffer, out NetXMessage? message)
         {
-            message = default;
+            message = null;
 
-            if (buffer.IsEmpty || (_options.Duplex && buffer.Length < GUID_LEN))
+            const int DUPLEX_HEADER_SIZE = sizeof(int) + GUID_LEN;
+
+            if (buffer.IsEmpty || (_options.Duplex && buffer.Length < DUPLEX_HEADER_SIZE))
+            {
                 return false;
+            }
 
-            buffer.CopyTo(_recvBuffer);
+            var headerOffset = _options.Duplex ? DUPLEX_HEADER_SIZE : 0;
 
-            const int COMPLETION_OFFSET = GUID_LEN + sizeof(int);
-            var offset = _options.Duplex ? COMPLETION_OFFSET : 0;
-
-            var receivedBuffer = new ArraySegment<byte>(_recvBuffer, 0, (int)buffer.Length);
-            var size = _options.Duplex ? BitConverter.ToInt32(_recvBuffer) : GetReceiveMessageSize(in receivedBuffer);
-
-            if (size <= 0 || size > buffer.Length)
-                return false;
+            var minRecvSize = Math.Min(_options.RecvBufferSize, buffer.Length);
+            buffer.Slice(0, _options.Duplex ? headerOffset : minRecvSize).CopyTo(_recvBuffer);
             
+            var size = _options.Duplex ? BitConverter.ToInt32(_recvBuffer) : GetReceiveMessageSize(new ArraySegment<byte>(_recvBuffer, 0, (int)minRecvSize));
             var messageId = _options.Duplex ? new Guid(new Span<byte>(_recvBuffer, sizeof(int), GUID_LEN)) : Guid.Empty;
-            var messageBuffer = new ArraySegment<byte>(_recvBuffer, offset, size - offset);
 
+            if (size > _options.RecvBufferSize)
+                throw new Exception($"Recv Buffer is too small. RecvBuffLen = {_options.RecvBufferSize} ReceivedLen = {size}");
+
+            if (size > buffer.Length)
+                return false;
+
+            buffer.Slice(headerOffset, size - headerOffset).CopyTo(_recvBuffer);
+            
+            var messageBuffer = new ArraySegment<byte>(_recvBuffer, 0, size - headerOffset);
             ProcessReceivedBuffer(in messageBuffer);
 
             var next = buffer.GetPosition(size);
@@ -366,12 +385,10 @@ namespace NetX
 
             if (_options.Duplex && _completions.Remove(messageId, out var completion))
             {
-                completion.TrySetResult(messageBuffer);
-                return false;
+                return completion.TrySetResult(messageBuffer);
             }
 
             message = new NetXMessage(messageId, _options.CopyBuffer ? messageBuffer.ToArray() : messageBuffer);
-
             return true;
         }
 
@@ -386,9 +403,6 @@ namespace NetX
 
                     if (result.IsCanceled || result.IsCompleted)
                         break;
-
-                    if (buffer.Length > _sendBuffer.Length)
-                        throw new Exception($"Send Buffer is too small. SendBuffLen = {_sendBuffer.Length} SendLen = {buffer.Length}");
 
                     while (TryGetSendMessage(ref buffer, out ArraySegment<byte> sendBuff))
                     {
@@ -419,10 +433,18 @@ namespace NetX
             if (buffer.IsEmpty || buffer.Length < sizeof(int))
                 return false;
 
-            buffer.CopyTo(_sendBuffer);
-
+            buffer.Slice(0, sizeof(int)).CopyTo(_sendBuffer);
             var size = BitConverter.ToInt32(_sendBuffer);
-            sendBuff = new ArraySegment<byte>(_sendBuffer, offset, size);
+
+            if (size > _options.SendBufferSize)
+                throw new Exception($"Send Buffer is too small. SendBuffLen = {_options.SendBufferSize} SendLen = {size}");
+
+            if (size > buffer.Length)
+                return false;
+
+            buffer.Slice(offset, size).CopyTo(_sendBuffer);
+
+            sendBuff = new ArraySegment<byte>(_sendBuffer, 0, size);
 
             ProcessSendBuffer(in sendBuff);
 

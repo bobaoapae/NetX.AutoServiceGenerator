@@ -98,7 +98,7 @@ namespace NetX
                 remoteAddress = realRemoteEndpoint.Address.MapToIPv4();
             }
 
-            var session = new NetXSession(sessionSocket, remoteAddress, _options);
+            var session = new NetXSession(sessionSocket, remoteAddress, _options, _serverName, _logger);
             try
             {
                 if (_sessions.TryAdd(session.Id, session))

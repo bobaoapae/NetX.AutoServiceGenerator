@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NetX;
@@ -10,10 +11,6 @@ namespace ServerClientSample
         public async Task OnSessionConnectAsync(INetXSession session)
         {
             Console.WriteLine($"Session {session.Id} connected. Time = {session.ConnectionTime} Address = {session.RemoteAddress}");
-
-            await session.SendAsync(BitConverter.GetBytes(1));
-            await session.SendAsync(BitConverter.GetBytes(2));
-            await session.SendAsync(BitConverter.GetBytes(3));
         }
 
         public Task OnSessionDisconnectAsync(Guid sessionId)
@@ -23,9 +20,11 @@ namespace ServerClientSample
             return Task.CompletedTask;
         }
 
-        public Task OnReceivedMessageAsync(INetXSession session, NetXMessage message)
+        public async Task OnReceivedMessageAsync(INetXSession session, NetXMessage message)
         {
-            return Task.CompletedTask;
+            var random = new Random();
+            var bigText = string.Join("", Enumerable.Range(0, 1004).Select(x => random.Next(9).ToString()));
+            await session.ReplyAsync(message.Id, Encoding.UTF8.GetBytes($"nicke{message.Buffer[0]}"));
         }
 
         public int GetReceiveMessageSize(INetXSession session, in ArraySegment<byte> buffer)

@@ -5,18 +5,24 @@ private async ValueTask InternalProxy_{0}_{1}_{2}_{3}({4}Session session, NetXMe
 {6}
 
         _currentSession.Value = session;
-        await _{5}.{3}({7});
         
         var stream = (RecyclableMemoryStream)_streamManager.GetStream("{0}_{1}_{2}_{3}", 4096, true);
+        stream.Advance(2);
         try
         {{
-            stream.ExWrite((byte)0);
+            await _{5}.{3}({7});
             {8}
             
+            stream.Position = 0;
+            stream.ExWrite((short)200);
             await session.Session.ReplyAsync(message.Id, stream);
         }}
-        catch (Exception)
+        catch (Exception ex)
         {{
+            _logger?.LogError(ex, "{{identity}}: Unexpected error processing request to ({{serviceName}}):({{methodName}}) from session session({{sessionId}}) ", _identity, "{0}", "{3}", session.Session.Id);
+            stream.Position = 0;
+            stream.ExWrite((short)500);
+            await session.Session.ReplyAsync(message.Id, stream);
             throw;
         }}
         finally

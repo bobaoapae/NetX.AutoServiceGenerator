@@ -11,5 +11,11 @@
         <ProjectReference Include="..\AutoServiceClientSample.Definitions\AutoServiceClientSample.Definitions.csproj" />
         <ProjectReference Include="..\..\NetX\NetX.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Serilog" Version="2.10.0" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+    </ItemGroup>
 
 </Project>

@@ -267,7 +267,8 @@ namespace NetX
 
         public void Disconnect()
         {
-            _cancellationTokenSource.Cancel();
+            if(!_cancellationTokenSource.IsCancellationRequested)
+                _cancellationTokenSource.Cancel();
             if (_socket.Connected)
             {
                 _socket.Shutdown(SocketShutdown.Both);
@@ -325,13 +326,13 @@ namespace NetX
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    ReadResult result = await _receivePipe.Reader.ReadAsync();
+                    ReadResult result = await _receivePipe.Reader.ReadAsync(cancellationToken);
                     ReadOnlySequence<byte> buffer = result.Buffer;
 
                     if (result.IsCanceled || result.IsCompleted)
                         break;
 
-                    while (TryGetRecvMessage(ref buffer, out var message))
+                    while (!cancellationToken.IsCancellationRequested && TryGetRecvMessage(ref buffer, out var message))
                     {
                         if (message.HasValue)
                         {
@@ -398,13 +399,13 @@ namespace NetX
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    ReadResult result = await _sendPipe.Reader.ReadAsync();
+                    ReadResult result = await _sendPipe.Reader.ReadAsync(cancellationToken);
                     ReadOnlySequence<byte> buffer = result.Buffer;
 
                     if (result.IsCanceled || result.IsCompleted)
                         break;
 
-                    while (TryGetSendMessage(ref buffer, out ArraySegment<byte> sendBuff))
+                    while (!cancellationToken.IsCancellationRequested && TryGetSendMessage(ref buffer, out ArraySegment<byte> sendBuff))
                     {
                         if (_socket.Connected)
                         {

@@ -124,7 +124,7 @@ namespace NetX
             }
             finally
             {
-                if (_sessions.Remove(session.Id, out var netXSession))
+                if (_sessions.TryRemove(session.Id, out var netXSession))
                 {
                     try
                     {
@@ -135,6 +135,10 @@ namespace NetX
                         //ignore
                     }
                     await _options.Processor.OnSessionDisconnectAsync(session.Id);
+                }
+                else
+                {
+                    _logger?.LogCritical("{svrName}: Fail on remove Session {sessId} from sessions dictionary", _serverName, session.Id);
                 }
             }
         }

@@ -140,6 +140,7 @@ namespace NetX
                 {
                     _logger?.LogCritical("{svrName}: Fail on remove Session {sessId} from sessions dictionary", _serverName, session.Id);
                 }
+                sessionSocket.Close(1);
             }
         }
     }

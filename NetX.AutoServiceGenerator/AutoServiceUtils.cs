@@ -121,7 +121,8 @@ namespace NetX.AutoServiceGenerator
 
         public static bool IsList(ITypeSymbol typeSymbol)
         {
-            return typeSymbol.Name == "List";
+            return typeSymbol.AllInterfaces.Any(symbol =>
+                symbol.Name == "ICollection" || symbol.Name == "IReadOnlyCollection`1");
         }
 
         public static string Capitalize(this string source)

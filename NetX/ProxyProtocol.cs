@@ -18,7 +18,7 @@ namespace NetX
         private const int Ipv4Length = 4;
         private const int Ipv6Length = 16;
 
-        private readonly static byte[] proxyProtocolV2Signature = { 0x0D, 0x0A, 0x0D, 0x0A, 0x00, 0x0D, 0x0A, 0x51, 0x55, 0x49, 0x54, 0x0A };
+        private static readonly byte[] proxyProtocolV2Signature = { 0x0D, 0x0A, 0x0D, 0x0A, 0x00, 0x0D, 0x0A, 0x51, 0x55, 0x49, 0x54, 0x0A };
 
         private readonly IPEndPoint remoteEndPoint;
         private readonly Stream stream;
@@ -61,7 +61,7 @@ namespace NetX
             return HasProxyProtocolSignature(readBuffer) && IsProtocolV2(readBuffer);
         }
 
-        internal async Task GetProxyProtocolHeader()
+        private async Task GetProxyProtocolHeader()
         {
             if (bytesRead > 0)
             {
@@ -78,7 +78,7 @@ namespace NetX
         internal async Task<byte[]> GetBytesWithoutProxyHeader() =>
             readBuffer.Skip(await GetProxyHeaderLength()).ToArray();
 
-        internal async Task<int> GetProxyHeaderLength() =>
+        private async Task<int> GetProxyHeaderLength() =>
             await IsProxyProtocolV2() ? SignatureLength + GetLength(readBuffer) : 0;
 
         internal async Task<int> GetLengthWithoutProxyHeader() => bytesRead - await GetProxyHeaderLength();
@@ -93,19 +93,19 @@ namespace NetX
             bytesRead += await stream.ReadAsync(readBuffer, bytesRead, length);
         }
 
-        internal static string GetCommand(byte[] header)
+        private static string GetCommand(byte[] header)
         {
             var version = header[12];
             return (version & 0x0F) == 0x01 ? "PROXY" : "LOCAL";
         }
 
-        internal static bool IsProtocolV2(byte[] header)
+        private static bool IsProtocolV2(byte[] header)
         {
             var version = header[12];
             return (version & 0xF0) == 0x20;
         }
 
-        internal static AddressFamily GetAddressFamily(byte[] header)
+        private static AddressFamily GetAddressFamily(byte[] header)
         {
             var family = header[13] & 0xF0;
             switch (family)
@@ -123,32 +123,32 @@ namespace NetX
             }
         }
 
-        internal static bool HasProxyProtocolSignature(byte[] signatureBytes) =>
+        private static bool HasProxyProtocolSignature(byte[] signatureBytes) =>
             signatureBytes.Length >= proxyProtocolV2Signature.Length &&
             signatureBytes.Take(proxyProtocolV2Signature.Length).SequenceEqual(proxyProtocolV2Signature);
 
-        internal static int GetLength(byte[] header) =>
+        private static int GetLength(byte[] header) =>
             BytesToUInt16(header.Skip(SignatureLength - 2).Take(2).ToArray());
 
-        internal static IPAddress GetSourceAddressIpv4(byte[] header) =>
+        private static IPAddress GetSourceAddressIpv4(byte[] header) =>
             new IPAddress(header.Skip(SignatureLength).Take(Ipv4Length).ToArray());
 
         internal static IPAddress GetDestinationAddressIpv4(byte[] header) =>
             new IPAddress(header.Skip(SignatureLength + Ipv4Length).Take(Ipv4Length).ToArray());
 
-        internal static int GetSourcePortIpv4(byte[] header) =>
+        private static int GetSourcePortIpv4(byte[] header) =>
             BytesToUInt16(header.Skip(SignatureLength + 2 * Ipv4Length).Take(2).ToArray());
 
         internal static int GetDestinationPortIpv4(byte[] header) =>
             BytesToUInt16(header.Skip(SignatureLength + 2 * Ipv4Length + 2).Take(2).ToArray());
 
-        internal static IPAddress GetSourceAddressIpv6(byte[] header) =>
+        private static IPAddress GetSourceAddressIpv6(byte[] header) =>
             new IPAddress(header.Skip(SignatureLength).Take(Ipv6Length).ToArray());
 
         internal static IPAddress GetDestinationAddressIpv6(byte[] header) =>
             new IPAddress(header.Skip(SignatureLength + Ipv6Length).Take(Ipv6Length).ToArray());
 
-        internal static int GetSourcePortIpv6(byte[] header) =>
+        private static int GetSourcePortIpv6(byte[] header) =>
             BytesToUInt16(header.Skip(SignatureLength + 2 * Ipv6Length).Take(2).ToArray());
 
         internal static int GetDestinationPortIpv6(byte[] header) =>

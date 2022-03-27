@@ -3,11 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetX", "NetX\NetX.csproj", "{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{83780E36-62A4-4496-9CBF-AE7106C79B0C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerClientSample", "samples\ServerClientSample\ServerClientSample.csproj", "{D01619AB-2D55-45B0-9310-D9546E346A1B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetX.AutoServiceGenerator", "NetX.AutoServiceGenerator\NetX.AutoServiceGenerator.csproj", "{6D5B9450-91D2-47C0-B5BB-EA2C6CFCBE66}"
 EndProject
@@ -27,14 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E2CAE4B-98D1-4A8E-AF2E-D7C6AFB2B4DD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D01619AB-2D55-45B0-9310-D9546E346A1B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6D5B9450-91D2-47C0-B5BB-EA2C6CFCBE66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D5B9450-91D2-47C0-B5BB-EA2C6CFCBE66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D5B9450-91D2-47C0-B5BB-EA2C6CFCBE66}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -64,7 +52,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{D01619AB-2D55-45B0-9310-D9546E346A1B} = {83780E36-62A4-4496-9CBF-AE7106C79B0C}
 		{0E6EA065-4831-484B-821F-F0819D62B0CB} = {83780E36-62A4-4496-9CBF-AE7106C79B0C}
 		{DCAD2E95-8D1C-48F9-A749-C46A92E0BB0B} = {83780E36-62A4-4496-9CBF-AE7106C79B0C}
 		{2CF238E0-AD3D-4D8A-AEB1-573802C58795} = {83780E36-62A4-4496-9CBF-AE7106C79B0C}

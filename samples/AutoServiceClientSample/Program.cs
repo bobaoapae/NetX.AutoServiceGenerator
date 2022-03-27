@@ -46,8 +46,17 @@ public class Program
         appendResult = await serviceManagerTwo.AutoServiceSample.AppendValues(1, 2, 3, new byte[] { 4, 5, 6, 7, 8, 9 });
         
         Console.WriteLine($"Append Result: {string.Join(",", appendResult)}");
-        
-        await serviceManagerTwo.AutoServiceSample.MethodWithoutReturnValue(1);
+
+        try
+        {
+            await serviceManagerTwo.AutoServiceSample.MethodWithoutReturnValue(1);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        await serviceManager.AutoServiceSample.MethodWithoutParameter();
 
         while (!cancellationTokenSource.IsCancellationRequested)
         {

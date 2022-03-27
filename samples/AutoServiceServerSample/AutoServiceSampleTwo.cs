@@ -45,4 +45,9 @@ public partial class AutoServiceSampleTwo : IAutoServiceSample
         Console.WriteLine($"Invoked Service AutoServiceServerSampleTwo.MethodWithoutReturnValue({value});");
         throw new Exception("Test");
     }
+
+    public Task MethodWithoutParameter()
+    {
+        return Task.CompletedTask;
+    }
 }

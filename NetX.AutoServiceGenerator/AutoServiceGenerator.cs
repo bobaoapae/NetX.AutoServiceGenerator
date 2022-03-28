@@ -35,7 +35,15 @@ public class AutoServiceGenerator : IIncrementalGenerator
             static (spc, source) => AutoServiceClientGenerator.Generate(source.Item1, source.Item2, spc));
     }
 
-    private static bool IsSyntaxTargetForGeneration(SyntaxNode node) => node is ClassDeclarationSyntax;
+    private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
+    {
+        if (node is ClassDeclarationSyntax classDeclarationSyntax && AutoServiceUtils.CheckClassIsPublic(classDeclarationSyntax) && AutoServiceUtils.CheckClassIsPartial(classDeclarationSyntax))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     private static ClassDeclarationSyntax GetSemanticTargetForGenerationServer(GeneratorSyntaxContext context)
     {
@@ -60,7 +68,7 @@ public class AutoServiceGenerator : IIncrementalGenerator
     {
         var autoServiceClientManagerInterfaceDefinition = context.SemanticModel.Compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceClientManager");
 
-        var classDeclarationSyntax = (ClassDeclarationSyntax)context.Node;
+        var classDeclarationSyntax = (ClassDeclarationSyntax) context.Node;
 
         var model = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax);
 

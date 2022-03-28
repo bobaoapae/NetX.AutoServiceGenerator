@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace NetX.AutoServiceGenerator
@@ -26,11 +27,8 @@ namespace NetX.AutoServiceGenerator
         {
             foreach (var declaringSyntaxReference in namedTypeSymbol.DeclaringSyntaxReferences)
             {
-                foreach (var syntaxToken in ((ClassDeclarationSyntax)declaringSyntaxReference.GetSyntax()).Modifiers)
-                {
-                    if (syntaxToken.Text == "partial")
-                        return true;
-                }
+                if (CheckClassIsPartial((ClassDeclarationSyntax) declaringSyntaxReference.GetSyntax()))
+                    return true;
             }
 
             return false;
@@ -40,14 +38,21 @@ namespace NetX.AutoServiceGenerator
         {
             foreach (var declaringSyntaxReference in namedTypeSymbol.DeclaringSyntaxReferences)
             {
-                foreach (var syntaxToken in ((ClassDeclarationSyntax)declaringSyntaxReference.GetSyntax()).Modifiers)
-                {
-                    if (syntaxToken.Text == "public")
-                        return true;
-                }
+                if (CheckClassIsPublic((ClassDeclarationSyntax) declaringSyntaxReference.GetSyntax()))
+                    return true;
             }
 
             return false;
+        }
+
+        public static bool CheckClassIsPublic(ClassDeclarationSyntax classDeclarationSyntax)
+        {
+            return classDeclarationSyntax.Modifiers.Any(SyntaxKind.PublicKeyword);
+        }
+
+        public static bool CheckClassIsPartial(ClassDeclarationSyntax classDeclarationSyntax)
+        {
+            return classDeclarationSyntax.Modifiers.Any(SyntaxKind.PartialKeyword);
         }
 
         public static string GetResource(Assembly assembly, SourceProductionContext context, string resourceName)
@@ -93,7 +98,7 @@ namespace NetX.AutoServiceGenerator
             {
                 return IsValidTypeForArgumentOrReturn(arrayTypeSymbol.ElementType);
             }
-            
+
             return false;
         }
 
@@ -115,7 +120,7 @@ namespace NetX.AutoServiceGenerator
             {
                 return NeedUseAutoSerializeOrDeserialize(arrayTypeSymbol.ElementType);
             }
-            
+
             return false;
         }
 

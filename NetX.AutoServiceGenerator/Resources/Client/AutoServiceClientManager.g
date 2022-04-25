@@ -65,5 +65,10 @@ public partial class {1} : ISessionListenerClient
     {{
         return _netXClient.ConnectAsync(cancellationToken);
     }}
+    
+    public void Disconnect()
+    {{
+        _netXClient.Disconnect();
+    }}
 
 }}

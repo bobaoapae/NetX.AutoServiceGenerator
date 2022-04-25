@@ -33,4 +33,9 @@ public class {1}Session
         #endregion
     }}
     
+    public void Disconnect()
+    {{
+        Session.Disconnect();
+    }}
+    
 }}

@@ -17,7 +17,6 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
-        source-url: https://nuget.pkg.github.com/project-nevareth/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN }}
     - name: Add GitHub Packages Source

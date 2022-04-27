@@ -20,9 +20,9 @@ jobs:
         source-url: https://nuget.pkg.github.com/project-nevareth/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN }}
-    - name: Build AutoServiceGenerator with dotnet
-      run: dotnet build NetX.AutoServiceGenerator\NetX.AutoServiceGenerator.csproj --configuration Release --output ./npkg
-    - name: Build AutoServiceGenerator.Definitions with dotnet
-      run: dotnet build NetX.AutoServiceGenerator.Definitions\NetX.AutoServiceGenerator.Definitions.csproj --configuration Release --output ./npkg
+    - name: Add GitHub Packages Source
+      run: dotnet nuget add source https://nuget.pkg.github.com/project-nevareth/index.json -n github -u ${{secrets.MEU_USER}}  -p ${{secrets.MEU_TOKEN}
+    - name: Build with dotnet
+      run: dotnet build --configuration Release --output ./npkg
     - name: Publish
       run: dotnet nuget push "npkg/*.nupkg" -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/project-nevareth/index.json --skip-duplicate

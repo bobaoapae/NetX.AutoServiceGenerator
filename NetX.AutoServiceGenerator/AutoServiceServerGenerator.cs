@@ -390,9 +390,9 @@ public static class AutoServiceServerGenerator
                                         readParameters.Append('\t', 2)
                                             .AppendLine($"for (var x = 0; x < arraySize_{parameterSymbol.Name}; x++)")
                                             .Append('\t', 2).Append("{").AppendLine()
-                                            .Append('\t', 3).Append($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}();")
-                                            .Append('\t', 3).Append($"instance_{arrayTypeSymbol.ElementType}.Deserialize(in inputBuffer, ref offset);")
-                                            .Append('\t', 3).Append($"{parameterSymbol.Name}[x] = instance_{arrayTypeSymbol.ElementType}")
+                                            .Append('\t', 3).AppendLine($"var instance_{arrayTypeSymbol.ElementType} = new {arrayTypeSymbol.ElementType}();")
+                                            .Append('\t', 3).AppendLine($"instance_{arrayTypeSymbol.ElementType}.Deserialize(in inputBuffer, ref offset);")
+                                            .Append('\t', 3).AppendLine($"{parameterSymbol.Name}[x] = instance_{arrayTypeSymbol.ElementType}")
                                             .Append('\t', 2).Append("}").AppendLine();
                                     }
                                     else if (AutoServiceUtils.IsList(parameterSymbol.Type))
@@ -417,8 +417,8 @@ public static class AutoServiceServerGenerator
                                     else
                                     {
                                         readParameters
-                                            .Append('\t', 3).Append($"var {parameterSymbol.Name} = new {parameterSymbol.Type}();")
-                                            .Append('\t', 3).Append($"{parameterSymbol.Name}.Deserialize(in inputBuffer, ref offset);");
+                                            .Append('\t', 3).AppendLine($"var {parameterSymbol.Name} = new {parameterSymbol.Type}();")
+                                            .Append('\t', 3).AppendLine($"{parameterSymbol.Name}.Deserialize(in inputBuffer, ref offset);");
                                     }
                                 }
                                 else

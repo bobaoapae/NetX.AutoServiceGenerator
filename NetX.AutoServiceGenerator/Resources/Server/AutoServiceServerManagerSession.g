@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace {0};
 
-public class {1}Session
+public partial class {1}Session
 {{
     private RecyclableMemoryStreamManager _streamManager;
 

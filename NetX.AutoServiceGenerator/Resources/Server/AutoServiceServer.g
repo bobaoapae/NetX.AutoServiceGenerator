@@ -7,6 +7,8 @@ public partial class {1}
 
     private {2}Processor.TryGetCallingSession _tryGetCallingSession;
     private {2}Processor.TryGetSession _tryGetSession;
+   
+    private {2}Session CurrentSession => TryGetCallingSession(out var session) ? session : null;
     
     public {1}({2}Processor.TryGetCallingSession tryGetCallingSession, {2}Processor.TryGetSession tryGetSession)
     {{

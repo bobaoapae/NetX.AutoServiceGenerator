@@ -19,6 +19,13 @@ jobs:
         dotnet-version: 6.0.x
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN }}
+    - name: Cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }} #hash of project files
+        restore-keys: |
+          ${{ runner.os }}-nuget-
     - name: Add GitHub Packages Source
       run: dotnet nuget add source https://nuget.pkg.github.com/project-nevareth/index.json -n github -u ${{secrets.MEU_USER}} -p ${{secrets.MEU_TOKEN}} --store-password-in-clear-text
     - name: Build with dotnet

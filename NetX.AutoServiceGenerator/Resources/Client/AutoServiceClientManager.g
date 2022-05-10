@@ -28,7 +28,7 @@ public partial class {1} : ISessionListenerClient
 
     #endregion
     
-    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int receiveBufferSize = 1024, int sendBufferSize = 1024)
+    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int receiveBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false)
     {{
         _address = address;
         _port = port;
@@ -49,7 +49,7 @@ public partial class {1} : ISessionListenerClient
             .EndPoint(_address, _port)
             .Duplex(true)
             .CopyBuffer(true)
-            .NoDelay(true)
+            .NoDelay(noDelay)
             .ReceiveBufferSize(receiveBufferSize)
             .SendBufferSize(sendBufferSize)
             .Build();

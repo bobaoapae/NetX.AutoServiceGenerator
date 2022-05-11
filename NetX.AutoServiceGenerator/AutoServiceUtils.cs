@@ -11,7 +11,7 @@ namespace NetX.AutoServiceGenerator
 {
     public static class AutoServiceUtils
     {
-        public static List<INamedTypeSymbol> GetAllClassWithInterface(List<INamedTypeSymbol> candidateClasses, INamedTypeSymbol interfaceType)
+        public static List<INamedTypeSymbol> GetAllClassWithInterface(IEnumerable<INamedTypeSymbol> candidateClasses, INamedTypeSymbol interfaceType)
         {
             var result = new List<INamedTypeSymbol>();
             foreach (var classSymbol in candidateClasses)

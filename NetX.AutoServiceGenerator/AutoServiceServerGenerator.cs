@@ -12,7 +12,7 @@ namespace NetX.AutoServiceGenerator;
 
 public static class AutoServiceServerGenerator
 {
-    public static void Generate(Compilation compilation, ImmutableArray<ClassDeclarationSyntax> classes, SourceProductionContext context)
+    public static void Generate(Compilation compilation, ImmutableArray<INamedTypeSymbol> classes, SourceProductionContext context)
     {
         if (classes.IsDefaultOrEmpty)
         {
@@ -23,18 +23,6 @@ public static class AutoServiceServerGenerator
         try
         {
             var assembly = Assembly.GetExecutingAssembly();
-
-            var distinctClasses = classes.Distinct();
-
-            var candidateClasses = new List<INamedTypeSymbol>();
-
-            foreach (var classDeclarationSyntax in distinctClasses)
-            {
-                var model = compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
-
-                var classSymbol = model.GetDeclaredSymbol(classDeclarationSyntax);
-                candidateClasses.Add((INamedTypeSymbol) classSymbol);
-            }
 
             var autoServiceConsumerAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceConsumerAttribute");
             var autoServiceProviderAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceProviderAttribute");
@@ -78,7 +66,7 @@ public static class AutoServiceServerGenerator
                 return;
 
 
-            var autoServiceServerManagers = AutoServiceUtils.GetAllClassWithInterface(candidateClasses, autoServiceServerManagerInterfaceDefinition);
+            var autoServiceServerManagers = AutoServiceUtils.GetAllClassWithInterface(classes, autoServiceServerManagerInterfaceDefinition);
             var alreadyProvidedService = new List<INamedTypeSymbol>();
             foreach (var autoServiceServerManager in autoServiceServerManagers)
             {

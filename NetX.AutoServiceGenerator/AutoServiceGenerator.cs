@@ -10,26 +10,17 @@ public class AutoServiceGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<ClassDeclarationSyntax> classDeclarationsServer = context.SyntaxProvider
+        var classDeclarationsServer = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
-                transform: static (ctx, _) => GetSemanticTargetForGenerationServer(ctx))
-            .Where(static m => m is not null);
+                transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx));
 
-        IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> compilationAndClassesServer
-            = context.CompilationProvider.Combine(classDeclarationsServer.Collect());
+        var compilationAndClassesServer = context.CompilationProvider.Combine(classDeclarationsServer.Where(static (namedTypeSymbol) => IsNamedTypeForGenerationServer(namedTypeSymbol)).Collect());
 
         context.RegisterSourceOutput(compilationAndClassesServer,
             static (spc, source) => AutoServiceServerGenerator.Generate(source.Item1, source.Item2, spc));
 
-        IncrementalValuesProvider<ClassDeclarationSyntax> classDeclarationsClient = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
-                transform: static (ctx, _) => GetSemanticTargetForGenerationClient(ctx))
-            .Where(static m => m is not null);
-
-        IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> compilationAndClassesClient
-            = context.CompilationProvider.Combine(classDeclarationsClient.Collect());
+        var compilationAndClassesClient = context.CompilationProvider.Combine(classDeclarationsServer.Where(static (namedTypeSymbol) => IsNamedTypeForGenerationClient(namedTypeSymbol)).Collect());
 
         context.RegisterSourceOutput(compilationAndClassesClient,
             static (spc, source) => AutoServiceClientGenerator.Generate(source.Item1, source.Item2, spc));
@@ -37,50 +28,29 @@ public class AutoServiceGenerator : IIncrementalGenerator
 
     private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
     {
-        if (node is ClassDeclarationSyntax classDeclarationSyntax && AutoServiceUtils.CheckClassIsPublic(classDeclarationSyntax) && AutoServiceUtils.CheckClassIsPartial(classDeclarationSyntax))
-        {
-            return true;
-        }
-
-        return false;
+        return node is ClassDeclarationSyntax classDeclarationSyntax && AutoServiceUtils.CheckClassIsPublic(classDeclarationSyntax) && AutoServiceUtils.CheckClassIsPartial(classDeclarationSyntax);
     }
 
-    private static ClassDeclarationSyntax GetSemanticTargetForGenerationServer(GeneratorSyntaxContext context)
+    private static INamedTypeSymbol GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
     {
-        var autoServiceServerManagerInterfaceDefinition = context.SemanticModel.Compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceServerManager");
-
         var classDeclarationSyntax = (ClassDeclarationSyntax)context.Node;
 
         var model = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax);
 
-        if (model is INamedTypeSymbol namedTypeSymbol)
-        {
-            if (AutoServiceUtils.CheckClassIsPublic(namedTypeSymbol) && AutoServiceUtils.CheckClassIsPartial(namedTypeSymbol) && namedTypeSymbol.Interfaces.Any(symbol => SymbolEqualityComparer.Default.Equals(symbol, autoServiceServerManagerInterfaceDefinition)))
-            {
-                return classDeclarationSyntax;
-            }
-        }
-
-        return null;
+        return (INamedTypeSymbol)model;;
     }
 
-    private static ClassDeclarationSyntax GetSemanticTargetForGenerationClient(GeneratorSyntaxContext context)
+    private static bool IsNamedTypeForGenerationServer(INamedTypeSymbol namedTypeSymbol)
     {
-        var autoServiceClientManagerInterfaceDefinition = context.SemanticModel.Compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceClientManager");
+        return AutoServiceUtils.CheckClassIsPublic(namedTypeSymbol) && 
+               AutoServiceUtils.CheckClassIsPartial(namedTypeSymbol) &&
+               namedTypeSymbol.Interfaces.Any(symbol => symbol.Name == "IAutoServiceServerManager");
+    }
 
-        var classDeclarationSyntax = (ClassDeclarationSyntax) context.Node;
-
-        var model = context.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax);
-
-        if (model is INamedTypeSymbol namedTypeSymbol)
-        {
-            if (AutoServiceUtils.CheckClassIsPublic(namedTypeSymbol) && AutoServiceUtils.CheckClassIsPartial(namedTypeSymbol) && AutoServiceUtils.CheckClassIsPartial(namedTypeSymbol) &&
-                namedTypeSymbol.Interfaces.Any(symbol => SymbolEqualityComparer.Default.Equals(symbol, autoServiceClientManagerInterfaceDefinition)))
-            {
-                return classDeclarationSyntax;
-            }
-        }
-
-        return null;
+    private static bool IsNamedTypeForGenerationClient(INamedTypeSymbol namedTypeSymbol)
+    {
+        return AutoServiceUtils.CheckClassIsPublic(namedTypeSymbol) && 
+               AutoServiceUtils.CheckClassIsPartial(namedTypeSymbol) &&
+               namedTypeSymbol.Interfaces.Any(symbol => symbol.Name == "IAutoServiceClientManager");
     }
 }

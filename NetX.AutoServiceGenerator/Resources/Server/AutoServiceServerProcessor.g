@@ -99,7 +99,8 @@ public class {1}Processor : INetXServerProcessor
         var buffer = message.Buffer;
         var offset = buffer.Offset;
         
-        buffer.Read(ref offset, out string interfaceCode);
+        buffer.Read(ref offset, out int len_interfaceCode);
+        buffer.Read(ref offset, in len_interfaceCode, out string interfaceCode);
         buffer.Read(ref offset, out ushort methodCode);
 
         Task.Run(async () =>

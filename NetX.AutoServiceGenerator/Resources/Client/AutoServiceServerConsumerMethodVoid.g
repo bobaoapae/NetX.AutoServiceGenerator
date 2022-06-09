@@ -3,6 +3,7 @@
         var {0}_{1}_stream = _streamManager.GetStream("{0}_{1}", 4096, true);
         try
         {{
+            {0}_{1}_stream.ExWrite("{0}".Length);
             {0}_{1}_stream.ExWrite("{0}");
             {0}_{1}_stream.ExWrite(Convert.ToUInt16({7}));
             

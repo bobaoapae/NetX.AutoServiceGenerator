@@ -148,8 +148,8 @@ public static class AutoServiceServerGenerator
                                     context.ReportDiagnostic(Diagnostic.Create(
                                         new DiagnosticDescriptor(
                                             "ASG0006",
-                                            $"Non supported generic type <{methodReturnTypeGeneric}>",
-                                            $"Non supported generic type <{methodReturnTypeGeneric}>",
+                                            $"Non supported generic type <{methodReturnTypeGeneric}> for method return type",
+                                            $"Non supported generic type <{methodReturnTypeGeneric}> for method return type",
                                             "AutoServiceGenerator",
                                             DiagnosticSeverity.Error,
                                             true),

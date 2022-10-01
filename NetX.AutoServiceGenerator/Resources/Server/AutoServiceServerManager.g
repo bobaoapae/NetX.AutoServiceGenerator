@@ -21,7 +21,7 @@ public partial class {1} : ISessionListenerServer<{1}Session>
     private readonly ILogger _logger;
     private readonly string _identity;
 
-    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false)
+    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false, int socketTimeout = 5000)
     {{
         _address = address;
         _port = port;
@@ -40,7 +40,7 @@ public partial class {1} : ISessionListenerServer<{1}Session>
         _netXServer = NetXServerBuilder.Create(loggerFactory, nameof({1}))
             .Processor(_processor)
             .EndPoint(_address, _port)
-            .Duplex(true)
+            .Duplex(true, socketTimeout)
             .CopyBuffer(true)
             .NoDelay(noDelay)
             .ReceiveBufferSize(recvBufferSize)

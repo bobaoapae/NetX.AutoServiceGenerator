@@ -28,7 +28,7 @@ public partial class {1} : ISessionListenerClient
 
     #endregion
     
-    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false)
+    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false, int socketTimeout = 5000)
     {{
         _address = address;
         _port = port;
@@ -47,11 +47,12 @@ public partial class {1} : ISessionListenerClient
         _netXClient = NetXClientBuilder.Create(loggerFactory, nameof({1}))
             .Processor(_processor)
             .EndPoint(_address, _port)
-            .Duplex(true)
+            .Duplex(true, socketTimeout)
             .CopyBuffer(true)
             .NoDelay(noDelay)
             .ReceiveBufferSize(recvBufferSize)
             .SendBufferSize(sendBufferSize)
+            .SocketTimeout(socketTimeout)
             .Build();
 
         #region InitializeServices

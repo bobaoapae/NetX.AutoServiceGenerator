@@ -315,12 +315,12 @@ public static class AutoServiceClientGenerator
                                 
                                 if (hasSizeProperty)
                                 {
-                                    readParameters.Append('\t', 3).AppendLine($"inputBuffer.Read(ref offset, out int len_{parameterSymbol.Name});");
-                                    readParameters.Append('\t', 3).AppendLine($"inputBuffer.Read(ref offset, in len_{parameterSymbol.Name}, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, out int len_{parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, in len_{parameterSymbol.Name}, out {parameterSymbol} {parameterSymbol.Name});");
                                 }
                                 else
                                 {
-                                    readParameters.Append('\t', 3).AppendLine($"inputBuffer.Read(ref offset, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, out {parameterSymbol} {parameterSymbol.Name});");
                                 }
 
                                 parameters.Append($"{parameterSymbol.Name}, ");
@@ -343,11 +343,11 @@ public static class AutoServiceClientGenerator
                                 
                                 if (methodReturnGenericType is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
-                                    writeResult.Append('\t', 4).AppendLine($"stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
+                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
                                 }
                                 else
                                 {
-                                    writeResult.Append('\t', 4).AppendLine($"stream.ExWrite({resultVariableName});");
+                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({resultVariableName});");
                                 }
                             }
 

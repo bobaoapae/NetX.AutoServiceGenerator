@@ -11,7 +11,7 @@ private async ValueTask InternalProxy_{0}_{1}_{2}_{3}({4}Session session, NetXMe
         try
         {{
             await _{5}.{3}({7});
-            {8}
+{8}
             
             stream.Position = 0;
             stream.ExWrite((short)200);

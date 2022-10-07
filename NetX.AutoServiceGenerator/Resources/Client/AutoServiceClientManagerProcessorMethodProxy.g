@@ -10,7 +10,7 @@
         {{
             var {0}_{1}_{2}_{3}_Result = await _{4}.{3}({6});
 
-            {7}
+{7}
 
             stream.Position = 0;
             stream.ExWrite((short)200);

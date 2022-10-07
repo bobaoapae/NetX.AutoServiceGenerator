@@ -221,11 +221,11 @@ public static class AutoServiceServerGenerator
 
                                 if (parameterSymbol.Type is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
-                                    writeParameters.Append('\t', 4).AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + parameterSymbol.Name});");
+                                    writeParameters.Append('\t', 3).AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + parameterSymbol.Name});");
                                 }
                                 else
                                 {
-                                    writeParameters.Append('\t', 4).AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name});");
+                                    writeParameters.Append('\t', 3).AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name});");
                                 }
 
                                 parameters.Append($"{parameterSymbol.Type} {parameterSymbol.Name}, ");
@@ -318,12 +318,12 @@ public static class AutoServiceServerGenerator
                                 
                                 if (hasSizeProperty)
                                 {
-                                    readParameters.Append('\t', 3).AppendLine($"inputBuffer.Read(ref offset, out int len_{parameterSymbol.Name});");
-                                    readParameters.Append('\t', 3).AppendLine($"inputBuffer.Read(ref offset, in len_{parameterSymbol.Name}, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, out int len_{parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, in len_{parameterSymbol.Name}, out {parameterSymbol} {parameterSymbol.Name});");
                                 }
                                 else
                                 {
-                                    readParameters.Append('\t', 3).AppendLine($"inputBuffer.Read(ref offset, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, out {parameterSymbol} {parameterSymbol.Name});");
                                 }
 
                                 parameters.Append($"{parameterSymbol.Name}, ");
@@ -346,11 +346,11 @@ public static class AutoServiceServerGenerator
                                 
                                 if (methodReturnGenericType is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
-                                    writeResult.Append('\t', 4).AppendLine($"stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
+                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
                                 }
                                 else
                                 {
-                                    writeResult.Append('\t', 4).AppendLine($"stream.ExWrite({resultVariableName});");
+                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({resultVariableName});");
                                 }
                             }
 

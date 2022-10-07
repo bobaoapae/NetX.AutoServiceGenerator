@@ -2,13 +2,16 @@
     {{
         var inputBuffer = message.Buffer;
 
-{5}
-        
         var stream = (RecyclableMemoryStream)_streamManager.GetStream("{0}_{1}_{2}_{3}", 4096, true);
         stream.Advance(2);
+
         try
         {{
+{5}
+
             await _{4}.{3}({6});
+
+
 
 {7}
             

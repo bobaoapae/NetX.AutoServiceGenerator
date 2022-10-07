@@ -1,15 +1,14 @@
 private async ValueTask InternalProxy_{0}_{1}_{2}_{3}({4}Session session, NetXMessage message, int offset)
     {{
         var inputBuffer = message.Buffer;
-
-{6}
-
         _currentSession.Value = session;
         
         var stream = (RecyclableMemoryStream)_streamManager.GetStream("{0}_{1}_{2}_{3}", 4096, true);
         stream.Advance(2);
         try
         {{
+{6}
+
             await _{5}.{3}({7});
 {8}
             

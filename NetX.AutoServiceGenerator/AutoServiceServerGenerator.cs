@@ -87,7 +87,7 @@ public static class AutoServiceServerGenerator
                 var allImplementedServices = autoServiceServerManager.GetAttributes()
                     .Where(data => data.AttributeClass?.Name == autoServiceProviderAttributeDefinition.Name)
                     .Where(data => data.ConstructorArguments.Length == 1 && data.ConstructorArguments[0].Value != null)
-                    .Select(data => (INamedTypeSymbol) data.ConstructorArguments[0].Value).ToList();
+                    .Select(data => (INamedTypeSymbol)data.ConstructorArguments[0].Value).ToList();
 
                 foreach (var implementedServerService in allImplementedServices)
                 {
@@ -140,9 +140,9 @@ public static class AutoServiceServerGenerator
                                 return;
                             }
 
-                            if (((INamedTypeSymbol) methodSymbol.ReturnType).TypeArguments.Length == 1)
+                            if (((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments.Length == 1)
                             {
-                                var methodReturnTypeGeneric = ((INamedTypeSymbol) methodSymbol.ReturnType).TypeArguments[0];
+                                var methodReturnTypeGeneric = ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0];
                                 if (!AutoServiceUtils.IsValidTypeForArgumentOrReturn(methodReturnTypeGeneric))
                                 {
                                     context.ReportDiagnostic(Diagnostic.Create(
@@ -177,7 +177,7 @@ public static class AutoServiceServerGenerator
                     if (attributeData.AttributeClass?.Name == autoServiceConsumerAttributeDefinition.Name)
                     {
                         if (attributeData.ConstructorArguments.Length == 1 && attributeData.ConstructorArguments[0].Value != null)
-                            autoServiceClientConsumerInterfaces.Add((INamedTypeSymbol) attributeData.ConstructorArguments[0].Value);
+                            autoServiceClientConsumerInterfaces.Add((INamedTypeSymbol)attributeData.ConstructorArguments[0].Value);
                     }
                 }
 
@@ -205,15 +205,19 @@ public static class AutoServiceServerGenerator
                         if (member is IMethodSymbol methodSymbol)
                         {
                             var methodReturnType = methodSymbol.ReturnType;
-                            var methodReturnTypeGeneric = ((INamedTypeSymbol) methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol) methodReturnType).TypeArguments[0] : null;
+                            var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
                             var writeParameters = new StringBuilder();
                             var parameters = new StringBuilder();
                             var readResult = new StringBuilder();
 
                             foreach (var parameterSymbol in methodSymbol.Parameters)
                             {
-                                var hasSizeProperty = parameterSymbol.Type.ToString() == "string" || parameterSymbol.Type is IArrayTypeSymbol || AutoServiceUtils.IsList(parameterSymbol.Type);
-                                if (hasSizeProperty)
+                                if (parameterSymbol.Type.ToString() == "string")
+                                {
+                                    writeParameters.Append('\t', 3)
+                                        .AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name} == null ? 0 : System.Text.Encoding.UTF8.GetByteCount({parameterSymbol.Name}));");
+                                }
+                                else if (parameterSymbol.Type is IArrayTypeSymbol || AutoServiceUtils.IsList(parameterSymbol.Type))
                                 {
                                     var sizeProperty = parameterSymbol.Type is IArrayTypeSymbol || parameterSymbol.Type.ToString() == "string" ? "Length" : "Count";
                                     writeParameters.Append('\t', 3).AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name}.{sizeProperty});");
@@ -221,7 +225,9 @@ public static class AutoServiceServerGenerator
 
                                 if (parameterSymbol.Type is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
-                                    writeParameters.Append('\t', 3).AppendLine($"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + parameterSymbol.Name});");
+                                    writeParameters.Append('\t', 3)
+                                        .AppendLine(
+                                            $"{autoServiceClientConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + parameterSymbol.Name});");
                                 }
                                 else
                                 {
@@ -238,7 +244,7 @@ public static class AutoServiceServerGenerator
                             if (methodReturnTypeGeneric != null)
                             {
                                 var hasSizeProperty = methodReturnTypeGeneric.ToString() == "string" || methodReturnTypeGeneric is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnTypeGeneric);
-                                
+
                                 if (hasSizeProperty)
                                 {
                                     readResult.Append('\t', 3).AppendLine($"{resultBufferVariableName}.Read(ref {offsetVariableName}, out int len_{methodReturnTypeGeneric.Name});");
@@ -315,7 +321,7 @@ public static class AutoServiceServerGenerator
                             foreach (var parameterSymbol in methodSymbol.Parameters)
                             {
                                 var hasSizeProperty = parameterSymbol.Type.ToString() == "string" || parameterSymbol.Type is IArrayTypeSymbol || AutoServiceUtils.IsList(parameterSymbol.Type);
-                                
+
                                 if (hasSizeProperty)
                                 {
                                     readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, out int len_{parameterSymbol.Name});");
@@ -330,20 +336,22 @@ public static class AutoServiceServerGenerator
                             }
 
                             var methodReturnType = methodSymbol.ReturnType;
-                            var methodReturnGenericType = ((INamedTypeSymbol) methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol) methodReturnType).TypeArguments[0] : null;
+                            var methodReturnGenericType = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
 
                             if (methodReturnGenericType != null)
                             {
                                 var resultVariableName = $"{implementedServerService.Name}_{interfaceServer.Name}_{methodCode}_{methodSymbol.Name}_Result";
-                                
-                                var hasSizeProperty = methodReturnGenericType.ToString() == "string" || methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType);
-                                
-                                if (hasSizeProperty)
+
+                                if (methodReturnGenericType.ToString() == "string")
+                                {
+                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({resultVariableName} == null ? 0 : System.Text.Encoding.UTF8.GetByteCount({resultVariableName}));");
+                                }
+                                else if (methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType))
                                 {
                                     var sizeProperty = methodReturnGenericType is IArrayTypeSymbol || methodReturnGenericType.ToString() == "string" ? "Length" : "Count";
                                     writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({resultVariableName}.{sizeProperty});");
                                 }
-                                
+
                                 if (methodReturnGenericType is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
                                     writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");

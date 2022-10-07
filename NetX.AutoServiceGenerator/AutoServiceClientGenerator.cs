@@ -212,16 +212,16 @@ public static class AutoServiceClientGenerator
                                 if (hasSizeProperty)
                                 {
                                     var sizeProperty = parameterSymbol.Type is IArrayTypeSymbol || parameterSymbol.Type.ToString() == "string" ? "Length" : "Count";
-                                    writeParameters.Append('\t', 2).AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name}.{sizeProperty});");
+                                    writeParameters.Append('\t', 3).AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name}.{sizeProperty});");
                                 }
 
                                 if (parameterSymbol.Type is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
-                                    writeParameters.Append('\t', 2).AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + parameterSymbol.Name});");
+                                    writeParameters.Append('\t', 3).AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + parameterSymbol.Name});");
                                 }
                                 else
                                 {
-                                    writeParameters.Append('\t', 2).AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name});");
+                                    writeParameters.Append('\t', 3).AppendLine($"{autoServiceServerConsumerInterface.Name}_{methodSymbol.Name}_stream.ExWrite({parameterSymbol.Name});");
                                 }
 
                                 parameters.Append($"{parameterSymbol.Type} {parameterSymbol.Name}, ");

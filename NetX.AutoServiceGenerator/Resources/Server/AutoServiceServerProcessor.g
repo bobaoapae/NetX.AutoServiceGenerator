@@ -107,17 +107,17 @@ public class {1}Processor : INetXServerProcessor
         buffer.Read(ref offset, in len_interfaceCode, out string interfaceCode);
         buffer.Read(ref offset, out ushort methodCode);
 
+        if(!_sessions.TryGetValue(session.Id, out var autoServiceSession))
+        {{
+            _logger?.LogError("{{identity}}: Received request but session ({{sessionId}}) was not found on processor session list", _identity, session.Id);
+            session.Disconnect();
+            return;
+        }}
+
 {8}
 
         _ = Task.Run(async () =>
         {{
-            if(!_sessions.TryGetValue(session.Id, out var autoServiceSession))
-            {{
-                _logger?.LogError("{{identity}}: Received request but session ({{sessionId}}) was not found on processor session list", _identity, session.Id);
-                session.Disconnect();
-                return;
-            }}
-
             if(!_serviceProxies.ContainsKey(interfaceCode))
             {{
                 _logger?.LogWarning("{{identity}}: Received request to unregistered service ({{interfaceCode}})", _identity, interfaceCode);

@@ -10,6 +10,7 @@
 
             var inputBuffer = message.Buffer;
             inputBuffer.Read(ref offset, out {0} ipsInternalAuthProto);
+            _currentSession.Value = autoServiceSession;
             var internalAuthResult = await _autoServiceAuthenticator.AuthenticateAsync(ipsInternalAuthProto);
             await using var stream = (RecyclableMemoryStream)_streamManager.GetStream("ipcInternalAuthentication", 4096, true);
             stream.ExWrite(internalAuthResult);

@@ -27,6 +27,8 @@ public partial class {1} : ISessionListenerClient
  {2}
 
     #endregion
+
+    public bool IsConnected => _netXClient.IsConnected;
     
     public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false, int socketTimeout = 5000)
     {{

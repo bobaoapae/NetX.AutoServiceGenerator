@@ -107,7 +107,7 @@ public static class AutoServiceClientGenerator
 
                 var autoServiceServerAuthenticationAttribute = autoServiceClientManager.GetAttributes().FirstOrDefault(data => data.AttributeClass?.Name == autoServiceAuthenticationAttributeDefinition.Name);
                 INamedTypeSymbol autoServiceClientAuthenticationAttributeProtoType = null;
-                if (autoServiceAuthenticationAttributeDefinition != null)
+                if (autoServiceServerAuthenticationAttribute != null)
                 {
                     autoServiceClientAuthenticationAttributeProtoType = (INamedTypeSymbol)autoServiceServerAuthenticationAttribute.AttributeClass.TypeArguments[0];
                 }
@@ -410,7 +410,7 @@ public static class AutoServiceClientGenerator
                 new DiagnosticDescriptor(
                     "ASG0007",
                     "Unexpected error",
-                    "A error occured on AutoServiceGenerator: ({0}  - {1})",
+                    "A error occured on AutoServiceClientGenerator: ({0}  - {1})",
                     "AutoServiceGenerator",
                     DiagnosticSeverity.Error,
                     true),

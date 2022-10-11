@@ -27,8 +27,9 @@ public static class AutoServiceClientGenerator
             var autoServiceConsumerAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceConsumerAttribute");
             var autoServiceProviderAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceProviderAttribute");
             var autoServiceClientManagerInterfaceDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceClientManager");
+            var autoServiceAuthenticationAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceClientAuthenticationAttribute`1");
 
-            if (autoServiceConsumerAttributeDefinition == null || autoServiceProviderAttributeDefinition == null || autoServiceClientManagerInterfaceDefinition == null)
+            if (autoServiceConsumerAttributeDefinition == null || autoServiceProviderAttributeDefinition == null || autoServiceClientManagerInterfaceDefinition == null || autoServiceAuthenticationAttributeDefinition == null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
@@ -50,6 +51,7 @@ public static class AutoServiceClientGenerator
             var autoServiceServerConsumerResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceServerConsumer");
             var autoServiceServerConsumerMethodResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceServerConsumerMethod");
             var autoServiceServerConsumerMethodResourceVoid = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceServerConsumerMethodVoid");
+            var autoServiceAuthenticationSessionConnectResource = AutoServiceUtils.GetResource(assembly, context, "Client.AutoServiceAuthenticationSessionConnect");
 
 
             if (
@@ -61,6 +63,7 @@ public static class AutoServiceClientGenerator
                 || autoServiceServerConsumerResource == ""
                 || autoServiceServerConsumerMethodResource == ""
                 || autoServiceServerConsumerMethodResourceVoid == ""
+                || autoServiceAuthenticationSessionConnectResource == ""
             )
                 return;
 
@@ -101,6 +104,13 @@ public static class AutoServiceClientGenerator
 
                 var allImplementedServices = autoServiceClientManager.GetAttributes().Where(data => data.AttributeClass?.Name == autoServiceProviderAttributeDefinition.Name)
                     .Select(data => ((INamedTypeSymbol)data.ConstructorArguments[0].Value)).ToList();
+
+                var autoServiceServerAuthenticationAttribute = autoServiceClientManager.GetAttributes().FirstOrDefault(data => data.AttributeClass?.Name == autoServiceAuthenticationAttributeDefinition.Name);
+                INamedTypeSymbol autoServiceClientAuthenticationAttributeProtoType = null;
+                if (autoServiceAuthenticationAttributeDefinition != null)
+                {
+                    autoServiceClientAuthenticationAttributeProtoType = (INamedTypeSymbol)autoServiceServerAuthenticationAttribute.AttributeClass.TypeArguments[0];
+                }
 
                 foreach (var implementedServerService in allImplementedServices)
                 {
@@ -270,8 +280,24 @@ public static class AutoServiceClientGenerator
                     context.AddSource($"{autoServiceServerConsumerInterface.Name.Substring(1)}{autoServiceClientManagerName}ServerConsumer.g.cs", SourceText.From(autoServiceServerConsumerSource, Encoding.UTF8));
                 }
 
-                var autoServiceClientManagerSource = string.Format(autoServiceClientManagerResource, namespaceAutoServiceClientManager, autoServiceClientManagerName, autoServiceServerConsumerDeclarations,
-                    autoServicesServerConsumerInitializations, autoServiceClientManagerUsings);
+                var authenticationParameters = "";
+                var autoServiceAuthenticationSessionConnect = "";
+
+                if (autoServiceClientAuthenticationAttributeProtoType != null)
+                {
+                    authenticationParameters = $"{autoServiceClientAuthenticationAttributeProtoType.ContainingNamespace}.{autoServiceClientAuthenticationAttributeProtoType.Name} ipsInternalAuthenticationProto, ";
+                    autoServiceAuthenticationSessionConnect = string.Format(autoServiceAuthenticationSessionConnectResource);
+                }
+
+                var autoServiceClientManagerSource = string.Format(
+                    autoServiceClientManagerResource,
+                    namespaceAutoServiceClientManager,
+                    autoServiceClientManagerName,
+                    autoServiceServerConsumerDeclarations,
+                    autoServicesServerConsumerInitializations,
+                    autoServiceClientManagerUsings,
+                    authenticationParameters,
+                    autoServiceAuthenticationSessionConnect);
                 context.AddSource($"{autoServiceClientManagerName}.g.cs", SourceText.From(autoServiceClientManagerSource, Encoding.UTF8));
 
 

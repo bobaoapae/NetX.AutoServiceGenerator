@@ -23,6 +23,7 @@ public class {1}Processor : INetXServerProcessor
 
     private readonly ConcurrentDictionary<Guid, {1}Session> _sessions;
     private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxies;
+    private readonly ConcurrentDictionary<Guid, TaskCompletionSource> _pendingAuthentications;
 
     private AsyncLocal<{1}Session> _currentSession;
 
@@ -39,6 +40,7 @@ public class {1}Processor : INetXServerProcessor
         _autoServerManager = autoServerManager;
         _streamManager = streamManager;
         _serviceProxies = new Dictionary<string, Dictionary<ushort, InternalProxy>>();
+        _pendingAuthentications = new ConcurrentDictionary<Guid, TaskCompletionSource>();
         _connectDelegate = connectDelegate;
         _disconnectDelegate = disconnectDelegate;
         _logger = logger;
@@ -72,7 +74,7 @@ public class {1}Processor : INetXServerProcessor
         return false;
     }}
 
-    public Task OnSessionConnectAsync(INetXSession session)
+    public async Task OnSessionConnectAsync(INetXSession session, CancellationToken cancellationToken)
     {{
         var internalSession = new {1}Session(session, _logger, _streamManager);
         if(!_sessions.TryAdd(session.Id, internalSession))
@@ -80,8 +82,10 @@ public class {1}Processor : INetXServerProcessor
             _logger?.LogError("{{identity}}: Fail on add session ({{sessionId}}) to processor session list", _identity, session.Id);
             session.Disconnect();
         }}
+        
+{7}
             
-        return _connectDelegate(internalSession);
+        await _connectDelegate(internalSession);
     }}
 
     public Task OnSessionDisconnectAsync(Guid sessionId)
@@ -94,7 +98,7 @@ public class {1}Processor : INetXServerProcessor
         return _disconnectDelegate(({1}Session)session);
     }}
 
-    public Task OnReceivedMessageAsync(INetXSession session, NetXMessage message)
+    public async Task OnReceivedMessageAsync(INetXSession session, NetXMessage message, CancellationToken cancellationToken)
     {{
         var buffer = message.Buffer;
         var offset = buffer.Offset;
@@ -103,7 +107,9 @@ public class {1}Processor : INetXServerProcessor
         buffer.Read(ref offset, in len_interfaceCode, out string interfaceCode);
         buffer.Read(ref offset, out ushort methodCode);
 
-        Task.Run(async () =>
+{8}
+
+        _ = Task.Run(async () =>
         {{
             if(!_sessions.TryGetValue(session.Id, out var autoServiceSession))
             {{
@@ -125,9 +131,7 @@ public class {1}Processor : INetXServerProcessor
             }}
                
             await _serviceProxies[interfaceCode][methodCode](autoServiceSession, message, offset);
-        }});
-        
-        return Task.CompletedTask;
+        }}, cancellationToken);
     }}
 
     public int GetReceiveMessageSize(INetXSession session, in ArraySegment<byte> buffer)

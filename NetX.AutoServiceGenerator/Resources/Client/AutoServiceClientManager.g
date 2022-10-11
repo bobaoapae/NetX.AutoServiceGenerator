@@ -62,9 +62,10 @@ public partial class {1} : ISessionListenerClient
         #endregion
     }}
 
-    public Task ConnectAsync(CancellationToken cancellationToken)
+    public async Task ConnectAsync({5}CancellationToken cancellationToken)
     {{
-        return _netXClient.ConnectAsync(cancellationToken);
+        await _netXClient.ConnectAsync(cancellationToken);
+{6}
     }}
     
     public void Disconnect()

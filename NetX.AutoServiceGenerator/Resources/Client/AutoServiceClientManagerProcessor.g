@@ -49,7 +49,7 @@ public class {1}Processor : INetXClientProcessor
 {3}
     }}
 
-    public Task OnConnectedAsync(INetXClientSession client)
+    public Task OnConnectedAsync(INetXClientSession client, CancellationToken cancellationToken)
     {{
         return _connectDelegate();
     }}
@@ -59,7 +59,7 @@ public class {1}Processor : INetXClientProcessor
         return _disconnectDelegate();
     }}
 
-    public Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message)
+    public Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message, CancellationToken cancellationToken)
     {{
         var buffer = message.Buffer;
         var offset = buffer.Offset;
@@ -83,7 +83,7 @@ public class {1}Processor : INetXClientProcessor
             }}
 
             await _serviceProxies[interfaceCode][methodCode](client, message, offset);
-        }});
+        }}, cancellationToken);
         return Task.CompletedTask;
     }}
 
@@ -101,6 +101,31 @@ public class {1}Processor : INetXClientProcessor
     {{
         
     }}
+
+    #region Authentication
+    public async Task<bool> SendAuthentication(NetX.INetXClient client, IAutoSerialize ipsAuthenticationProto, System.Threading.CancellationToken cancellationToken)
+    {{
+        try
+        {{
+            await using var stream = _streamManager.GetStream("ipcInternalAuthentication", 4096, true);
+            stream.ExWrite("InternalIpcAuthentication".Length);
+            stream.ExWrite("InternalIpcAuthentication");
+            stream.ExWrite(Convert.ToUInt16(1456));
+            stream.ExWrite(ipsAuthenticationProto);
+            
+            var bufferResult = await client.RequestAsync(stream, cancellationToken);
+            var offset = bufferResult.Offset;
+
+            bufferResult.Read(ref offset, out bool authResult);    
+            return authResult;
+        }}
+        catch(Exception ex)
+        {{
+            _logger?.LogError(ex, "{{identity}}: Error while sending authentication", _identity);
+            return false;
+        }}
+    }}
+    #endregion
     
     #region ServiceProviders
 

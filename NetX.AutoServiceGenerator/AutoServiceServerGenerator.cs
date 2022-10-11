@@ -27,8 +27,9 @@ public static class AutoServiceServerGenerator
             var autoServiceConsumerAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceConsumerAttribute");
             var autoServiceProviderAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceProviderAttribute");
             var autoServiceServerManagerInterfaceDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceServerManager");
+            var autoServiceAuthenticationAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceServerAuthenticationAttribute`2");
 
-            if (autoServiceConsumerAttributeDefinition == null || autoServiceProviderAttributeDefinition == null || autoServiceServerManagerInterfaceDefinition == null)
+            if (autoServiceConsumerAttributeDefinition == null || autoServiceProviderAttributeDefinition == null || autoServiceServerManagerInterfaceDefinition == null || autoServiceAuthenticationAttributeDefinition == null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
@@ -51,6 +52,8 @@ public static class AutoServiceServerGenerator
             var autoServiceServerProcessorResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerProcessor");
             var autoServiceServerProcessorMethodProxyResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerProcessorMethodProxy");
             var autoServiceServerProcessorMethodProxyResourceVoid = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceServerProcessorMethodProxyVoid");
+            var autoServiceAuthenticationSessionConnectResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceAuthenticationSessionConnect");
+            var autoServiceAuthenticationLogicResource = AutoServiceUtils.GetResource(assembly, context, "Server.AutoServiceAuthenticationLogic");
 
             if (
                 autoServiceClientConsumerResource == ""
@@ -62,6 +65,8 @@ public static class AutoServiceServerGenerator
                 || autoServiceServerProcessorResource == ""
                 || autoServiceServerProcessorMethodProxyResource == ""
                 || autoServiceServerProcessorMethodProxyResourceVoid == ""
+                || autoServiceAuthenticationSessionConnectResource == ""
+                || autoServiceAuthenticationLogicResource == ""
             )
                 return;
 
@@ -179,6 +184,15 @@ public static class AutoServiceServerGenerator
                         if (attributeData.ConstructorArguments.Length == 1 && attributeData.ConstructorArguments[0].Value != null)
                             autoServiceClientConsumerInterfaces.Add((INamedTypeSymbol)attributeData.ConstructorArguments[0].Value);
                     }
+                }
+
+                var autoServiceServerAuthenticationAttribute = autoServiceServerManager.GetAttributes().FirstOrDefault(data => data.AttributeClass?.Name == autoServiceAuthenticationAttributeDefinition.Name);
+                INamedTypeSymbol autoServiceServerAuthenticationAttributeImplementationType = null;
+                INamedTypeSymbol autoServiceServerAuthenticationAttributeProtoType = null;
+                if (autoServiceAuthenticationAttributeDefinition != null)
+                {
+                    autoServiceServerAuthenticationAttributeImplementationType = (INamedTypeSymbol)autoServiceServerAuthenticationAttribute.AttributeClass.TypeArguments[0];
+                    autoServiceServerAuthenticationAttributeProtoType = (INamedTypeSymbol)autoServiceServerAuthenticationAttribute.AttributeClass.TypeArguments[1];
                 }
 
                 var checkDuplicateAutoServiceServerManagerSessionSource = new List<string>();
@@ -305,7 +319,7 @@ public static class AutoServiceServerGenerator
 
                     autoServiceServerProcessorLoaders.Append('\t', 2).AppendLine($"_serviceProxies.Add(\"{implementedServerService.Interfaces[0].Name}\", new Dictionary<ushort, InternalProxy>());");
 
-                    var methodCode = 0;
+                    var methodCode = 0u;
                     foreach (var member in interfaceServer.GetMembers())
                     {
                         if (member is IMethodSymbol methodSymbol)
@@ -378,9 +392,38 @@ public static class AutoServiceServerGenerator
                     }
                 }
 
-                var autoServiceServerProcessorSource = string.Format(autoServiceServerProcessorResource, namespaceAutoServiceServerManager, autoServiceServerManagerName, autoServiceServerProcessorDeclarations,
-                    autoServiceServerProcessorInitializers, autoServiceServerProcessorLoaders,
-                    autoServiceServerProcessorProxies, autoServiceServerProcessorUsings);
+                var autoServiceAuthenticationSessionConnect = "";
+                var autoServiceAuthenticationLogic = "";
+
+                if (autoServiceServerAuthenticationAttributeImplementationType != null)
+                {
+                    var autoServiceServerSource = string.Format(
+                        autoServiceServerResource, 
+                        autoServiceServerAuthenticationAttributeImplementationType.ContainingNamespace.ToDisplayString(), 
+                        autoServiceServerAuthenticationAttributeImplementationType.Name,
+                        autoServiceServerManagerName);
+                    context.AddSource($"{autoServiceServerAuthenticationAttributeImplementationType.Name}.g.cs", SourceText.From(autoServiceServerSource, Encoding.UTF8));
+
+                    autoServiceServerProcessorDeclarations.Append('\t', 2).AppendLine($"private  {autoServiceServerAuthenticationAttributeImplementationType.ContainingNamespace}.{autoServiceServerAuthenticationAttributeImplementationType.Name} _autoServiceAuthenticator;");
+                    autoServiceServerProcessorInitializers.Append('\t', 2)
+                        .AppendLine(
+                            $"_autoServiceAuthenticator = new {autoServiceServerAuthenticationAttributeImplementationType.ContainingNamespace}.{autoServiceServerAuthenticationAttributeImplementationType.Name}(TryGetCallingSessionProxy, _sessions.TryGetValue);");
+
+                    autoServiceAuthenticationSessionConnect = string.Format(autoServiceAuthenticationSessionConnectResource);
+                    autoServiceAuthenticationLogic = string.Format(autoServiceAuthenticationLogicResource, autoServiceServerAuthenticationAttributeProtoType.ToDisplayString());
+                }
+
+                var autoServiceServerProcessorSource = string.Format(
+                    autoServiceServerProcessorResource, 
+                    namespaceAutoServiceServerManager, 
+                    autoServiceServerManagerName, 
+                    autoServiceServerProcessorDeclarations,
+                    autoServiceServerProcessorInitializers, 
+                    autoServiceServerProcessorLoaders,
+                    autoServiceServerProcessorProxies, 
+                    autoServiceServerProcessorUsings, 
+                    autoServiceAuthenticationSessionConnect, 
+                    autoServiceAuthenticationLogic);
                 context.AddSource($"{autoServiceServerManagerName}Processor.g.cs", SourceText.From(autoServiceServerProcessorSource, Encoding.UTF8));
             }
         }
@@ -390,11 +433,11 @@ public static class AutoServiceServerGenerator
                 new DiagnosticDescriptor(
                     "ASG0007",
                     "Unexpected error",
-                    "A error occured on AutoServiceGenerator: ({0}  - {1})",
+                    "A error occured on AutoServiceGenerator: ({0} - {1} - {2})",
                     "AutoServiceGenerator",
                     DiagnosticSeverity.Error,
                     true),
-                null, e.Message, e));
+                null, e, e.Message, e.StackTrace));
         }
     }
 }

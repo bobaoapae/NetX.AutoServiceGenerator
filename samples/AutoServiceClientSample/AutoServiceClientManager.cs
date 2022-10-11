@@ -5,6 +5,7 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceClientSample;
 
+[AutoServiceClientAuthentication<IpsAuthentication>]
 [AutoServiceProvider(typeof(AutoServiceReceiverSample))]
 [AutoServiceConsumer(typeof(IAutoServiceSample))]
 public partial class AutoServiceClientManager : IAutoServiceClientManager

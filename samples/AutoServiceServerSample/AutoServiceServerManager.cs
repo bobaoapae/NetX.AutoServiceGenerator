@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoServiceClientSample.Definitions;
+using AutoServiceServerSample.Definitions;
 using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceServerSample;
 
+[AutoServiceServerAuthentication<Authentication, IpsAuthentication>]
 [AutoServiceProvider(typeof(AutoServiceSample))]
 [AutoServiceConsumer(typeof(IAutoServiceReceiverSample))]
 public partial class AutoServiceServerManager : IAutoServiceServerManager

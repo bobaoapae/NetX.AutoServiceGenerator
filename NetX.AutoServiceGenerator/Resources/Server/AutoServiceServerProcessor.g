@@ -98,7 +98,9 @@ public class {1}Processor : INetXServerProcessor
         return _disconnectDelegate(({1}Session)session);
     }}
 
+    #pragma warning disable CS1998
     public async Task OnReceivedMessageAsync(INetXSession session, NetXMessage message, CancellationToken cancellationToken)
+    #pragma warning restore CS1998
     {{
         var buffer = message.Buffer;
         var offset = buffer.Offset;

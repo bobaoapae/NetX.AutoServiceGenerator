@@ -14,16 +14,23 @@ public async {2} {1}({4})
 
             {0}_{1}_Buffer_Result.Read(ref {0}_{1}_Buffer_Result_Offset, out short {0}_{1}_Buffer_Result_Response_Code);
 
-            switch({0}_{1}_Buffer_Result_Response_Code)
+            if ({0}_{1}_Buffer_Result_Response_Code != 200)
             {{
-                case 500: 
+                switch({0}_{1}_Buffer_Result_Response_Code)
                 {{
-                    throw new Exception("Unexpected error ocurred on server side");
-                }}
-                case 501: 
-                {{
-                    {0}_{1}_Buffer_Result.Read(ref {0}_{1}_Buffer_Result_Offset, out bool {0}_{1}_Buffer_Result_Response_Code_Complement);
-                    throw new NotImplementedException({0}_{1}_Buffer_Result_Response_Code_Complement ? "Service not implemented" : "Method not supported");
+                    case 500: 
+                    {{
+                        throw new Exception("Unexpected error ocurred on server side");
+                    }}
+                    case 501: 
+                    {{
+                        {0}_{1}_Buffer_Result.Read(ref {0}_{1}_Buffer_Result_Offset, out bool {0}_{1}_Buffer_Result_Response_Code_Complement);
+                        throw new NotImplementedException({0}_{1}_Buffer_Result_Response_Code_Complement ? "Service not implemented" : "Method not supported");
+                    }}
+                    default: 
+                    {{
+                        throw new Exception("Unexpected response code: " + {0}_{1}_Buffer_Result_Response_Code);
+                    }}
                 }}
             }}
 

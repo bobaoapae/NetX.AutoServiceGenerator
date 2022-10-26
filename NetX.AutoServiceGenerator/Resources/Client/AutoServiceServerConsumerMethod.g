@@ -1,5 +1,8 @@
 ﻿public async {2} {1}({4})
     {{
+        if(!_client.IsConnected)
+            throw new Exception("Not connected to server");
+
         var {0}_{1}_stream = _streamManager.GetStream("{0}_{1}", 4096, true);
         try
         {{

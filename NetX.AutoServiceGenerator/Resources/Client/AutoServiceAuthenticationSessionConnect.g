@@ -3,4 +3,5 @@
         {{
             _logger?.LogError("{{identity}}:  Authentication failed", _identity);
             Disconnect();
+            throw new Exception($"{{_identity}}:  Authentication failed");
         }}

@@ -346,12 +346,12 @@ public static class AutoServiceClientGenerator
 
                                 if (hasSizeProperty)
                                 {
-                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, out int len_{parameterSymbol.Name});");
-                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, in len_{parameterSymbol.Name}, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, out int len_{parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, in len_{parameterSymbol.Name}, out {parameterSymbol} {parameterSymbol.Name});");
                                 }
                                 else
                                 {
-                                    readParameters.Append('\t', 2).AppendLine($"inputBuffer.Read(ref offset, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, out {parameterSymbol} {parameterSymbol.Name});");
                                 }
 
                                 parameters.Append($"{parameterSymbol.Name}, ");
@@ -366,21 +366,21 @@ public static class AutoServiceClientGenerator
 
                                 if (methodReturnGenericType.ToString() == "string")
                                 {
-                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({resultVariableName} == null ? 0 : System.Text.Encoding.UTF8.GetByteCount({resultVariableName}));");
+                                    writeResult.Append('\t', 3).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({resultVariableName} == null ? 0 : System.Text.Encoding.UTF8.GetByteCount({resultVariableName}));");
                                 }
                                 else if (methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType))
                                 {
                                     var sizeProperty = methodReturnGenericType is IArrayTypeSymbol || methodReturnGenericType.ToString() == "string" ? "Length" : "Count";
-                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({resultVariableName}.{sizeProperty});");
+                                    writeResult.Append('\t', 3).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({resultVariableName}.{sizeProperty});");
                                 }
 
                                 if (methodReturnGenericType is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
-                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
+                                    writeResult.Append('\t', 3).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
                                 }
                                 else
                                 {
-                                    writeResult.Append('\t', 3).AppendLine($"stream.ExWrite({resultVariableName});");
+                                    writeResult.Append('\t', 3).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({resultVariableName});");
                                 }
                             }
 

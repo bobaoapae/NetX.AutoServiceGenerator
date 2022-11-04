@@ -30,7 +30,7 @@ public partial class {1} : ISessionListenerClient
 
     public bool IsConnected => _netXClient.IsConnected;
     
-    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false, int socketTimeout = 5000)
+    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false, int socketTimeout = 5000, bool disconnectOnTimeout = false)
     {{
         _address = address;
         _port = port;
@@ -55,6 +55,7 @@ public partial class {1} : ISessionListenerClient
             .ReceiveBufferSize(recvBufferSize)
             .SendBufferSize(sendBufferSize)
             .SocketTimeout(socketTimeout)
+            .DisconnectOnTimeout(disconnectOnTimeout)
             .Build();
 
         #region InitializeServices

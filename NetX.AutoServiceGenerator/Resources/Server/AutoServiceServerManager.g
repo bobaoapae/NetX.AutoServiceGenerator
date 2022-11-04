@@ -21,7 +21,7 @@ public partial class {1} : ISessionListenerServer<{1}Session>
     private readonly ILogger _logger;
     private readonly string _identity;
 
-    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false, int socketTimeout = 5000)
+    public {1}(string address, ushort port, ILoggerFactory loggerFactory = null, string identity = null, int recvBufferSize = 1024, int sendBufferSize = 1024, bool noDelay = false, int socketTimeout = 5000, bool disconnectOnTimeout = false)
     {{
         _address = address;
         _port = port;
@@ -45,6 +45,7 @@ public partial class {1} : ISessionListenerServer<{1}Session>
             .NoDelay(noDelay)
             .ReceiveBufferSize(recvBufferSize)
             .SendBufferSize(sendBufferSize)
+            .DisconnectOnTimeout(disconnectOnTimeout)
             .Build();
     }}
 

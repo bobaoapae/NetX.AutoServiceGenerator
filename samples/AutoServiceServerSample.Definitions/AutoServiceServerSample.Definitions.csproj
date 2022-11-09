@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -10,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoSerializer" Version="1.4.7" />
+        <PackageReference Include="AutoSerializer" Version="1.5.7" />
     </ItemGroup>
 
 </Project>

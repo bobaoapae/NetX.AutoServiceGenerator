@@ -57,7 +57,7 @@ namespace NetX.AutoServiceGenerator
 
         public static string GetResource(Assembly assembly, SourceProductionContext context, string resourceName)
         {
-            using (var resourceStream = assembly.GetManifestResourceStream($"NetX.AutoServiceGenerator.Resources.{resourceName}.g"))
+            using (var resourceStream = assembly.GetManifestResourceStream($"NetX.AutoServiceGenerator.Resources.{resourceName}.g.cs"))
             {
                 if (resourceStream != null)
                     return new StreamReader(resourceStream).ReadToEnd();

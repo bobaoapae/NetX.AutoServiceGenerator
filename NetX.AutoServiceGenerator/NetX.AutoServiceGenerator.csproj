@@ -5,7 +5,7 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <RepositoryUrl>https://github.com/bobaoapae/NetX.AutoServiceGenerator</RepositoryUrl>
         <PackageProjectUrl>https://github.com/bobaoapae/NetX.AutoServiceGenerator</PackageProjectUrl>
-        <Version>1.9.6</Version>
+        <Version>1.9.7</Version>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
@@ -18,9 +18,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Resources\*" />
-        <EmbeddedResource Include="Resources\Server\*" />
-        <EmbeddedResource Include="Resources\Client\*" />
+        <EmbeddedResource Include="Resources\**" />
+        <Compile Remove="Resources\**" />
     </ItemGroup>
 
     <PropertyGroup>

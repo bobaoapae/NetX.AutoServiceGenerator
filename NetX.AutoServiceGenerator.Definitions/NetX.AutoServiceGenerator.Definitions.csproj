@@ -3,8 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <RepositoryUrl>https://github.com/bobaoapae/NetX.AutoServiceGenerator</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/bobaoapae/NetX.AutoServiceGenerator</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/project-nevareth/NetX.AutoServiceGenerator</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/project-nevareth/NetX.AutoServiceGenerator</PackageProjectUrl>
         <Version>1.2.3</Version>
         <LangVersion>11</LangVersion>
     </PropertyGroup>

@@ -31,4 +31,4 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release --output ./npkg
     - name: Publish
-      run: dotnet nuget push "npkg/*.nupkg" -k ${{ secrets.MEU_TOKEN }} -s https://nuget.pkg.github.com/bobaoapae/index.json --skip-duplicate
+      run: dotnet nuget push "npkg/*.nupkg" -k ${{ secrets.MEU_TOKEN }} -s https://nuget.pkg.github.com/project-nevareth/index.json --skip-duplicate

@@ -339,11 +339,11 @@ public static class AutoServiceServerGenerator
                                 if (hasSizeProperty)
                                 {
                                     readParameters.Append('\t', 2).AppendLine($"{implementedServerService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedServerService.Name}_{interfaceServer.Name}_offset, out int len_{parameterSymbol.Name});");
-                                    readParameters.Append('\t', 2).AppendLine($"{implementedServerService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedServerService.Name}_{interfaceServer.Name}_offset, in len_{parameterSymbol.Name}, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"{implementedServerService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedServerService.Name}_{interfaceServer.Name}_offset, in len_{parameterSymbol.Name}, out {parameterSymbol.Type} {parameterSymbol.Name});");
                                 }
                                 else
                                 {
-                                    readParameters.Append('\t', 2).AppendLine($"{implementedServerService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedServerService.Name}_{interfaceServer.Name}_offset, out {parameterSymbol} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2).AppendLine($"{implementedServerService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedServerService.Name}_{interfaceServer.Name}_offset, out {parameterSymbol.Type} {parameterSymbol.Name});");
                                 }
 
                                 parameters.Append($"{parameterSymbol.Name}, ");

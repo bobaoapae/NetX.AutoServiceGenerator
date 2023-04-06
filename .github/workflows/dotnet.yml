@@ -16,7 +16,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 7.0.100
+        dotnet-version: 7.0.x
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN }}
     - name: Cache
@@ -29,6 +29,6 @@ jobs:
     - name: Add GitHub Packages Source
       run: dotnet nuget add source https://nuget.pkg.github.com/project-nevareth/index.json -n github -u ${{secrets.MEU_USER}} -p ${{secrets.MEU_TOKEN}} --store-password-in-clear-text
     - name: Build with dotnet
-      run: dotnet build --configuration Release --output ./npkg
+      run: dotnet build --configuration Release --property:PackageOutputPath=../npkg
     - name: Publish
       run: dotnet nuget push "npkg/*.nupkg" -k ${{ secrets.MEU_TOKEN }} -s https://nuget.pkg.github.com/project-nevareth/index.json --skip-duplicate

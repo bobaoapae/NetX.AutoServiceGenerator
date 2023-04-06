@@ -1,6 +1,8 @@
 private async ValueTask InternalProxy_{0}_{1}_{2}_{3}({4}Session session, NetXMessage {0}_{1}_message, int {0}_{1}_offset)
     {{
-        var {0}_{1}_inputBuffer = {0}_{1}_message.Buffer;
+        if(!MemoryMarshal.TryGetArray({0}_{1}_message.Buffer, out var {0}_{1}_inputBuffer))
+            return;
+
         _currentSession.Value = session;
         
         var {0}_{1}_stream = (RecyclableMemoryStream)_streamManager.GetStream("{0}_{1}_{2}_{3}", 4096, true);

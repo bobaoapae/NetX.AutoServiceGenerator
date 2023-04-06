@@ -4,7 +4,7 @@ namespace NetX.AutoServiceGenerator.Definitions;
 
 public interface ISessionListenerClient
 {
-    Task OnConnectedAsync();
+    ValueTask OnConnectedAsync();
 
-    Task OnDisconnectedAsync();
+    ValueTask OnDisconnectedAsync();
 }

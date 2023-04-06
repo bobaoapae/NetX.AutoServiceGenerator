@@ -11,15 +11,15 @@ namespace AutoServiceServerSample;
 [AutoServiceConsumer(typeof(IAutoServiceReceiverSample))]
 public partial class AutoServiceServerManager : IAutoServiceServerManager
 {
-    public Task OnSessionConnectAsync(AutoServiceServerManagerSession session)
+    public ValueTask OnSessionConnectAsync(AutoServiceServerManagerSession session)
     {
         Console.WriteLine($"Session Connected: {session.Session.Id}");
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public Task OnSessionDisconnectAsync(AutoServiceServerManagerSession session)
+    public ValueTask OnSessionDisconnectAsync(AutoServiceServerManagerSession session)
     {
         Console.WriteLine($"Session Disconnected: {session.Session.Id}");
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

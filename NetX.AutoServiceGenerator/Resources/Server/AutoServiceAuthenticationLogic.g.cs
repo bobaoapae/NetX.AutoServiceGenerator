@@ -8,7 +8,8 @@
             }}
             _logger?.LogInformation("{{identity}}: Received authentication request from {{sessionId}}", _identity, session.Id);
 
-            var inputBuffer = message.Buffer;
+            if(!MemoryMarshal.TryGetArray(message.Buffer, out var inputBuffer))
+                return;
             inputBuffer.Read(ref offset, out {0} ipsInternalAuthProto);
             _currentSession.Value = autoServiceSession;
             var internalAuthResult = await _autoServiceAuthenticator.AuthenticateAsync(ipsInternalAuthProto);

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using AutoSerializer.Definitions;
 using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 using NetX.AutoServiceGenerator.Definitions;
 {6}
 
@@ -15,8 +16,8 @@ namespace {0};
 public class {1}Processor : INetXClientProcessor
 {{
     private delegate ValueTask InternalProxy(INetXClientSession client, NetXMessage message, int offset);
-    public delegate Task ConnectDelegate();
-    public delegate Task DisconnectDelegate();
+    public delegate ValueTask ConnectDelegate();
+    public delegate ValueTask DisconnectDelegate();
 
     private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxies;
     
@@ -49,19 +50,21 @@ public class {1}Processor : INetXClientProcessor
 {3}
     }}
 
-    public Task OnConnectedAsync(INetXClientSession client, CancellationToken cancellationToken)
+    public ValueTask OnConnectedAsync(INetXClientSession client, CancellationToken cancellationToken)
     {{
         return _connectDelegate();
     }}
 
-    public Task OnDisconnectedAsync()
+    public ValueTask OnDisconnectedAsync()
     {{
         return _disconnectDelegate();
     }}
 
-    public Task OnReceivedMessageAsync(INetXClientSession client, NetXMessage message, CancellationToken cancellationToken)
+    public ValueTask OnReceivedMessageAsync(INetXClientSession client, NetXMessage message, CancellationToken cancellationToken)
     {{
-        var buffer = message.Buffer;
+        if(!MemoryMarshal.TryGetArray(message.Buffer, out var buffer))
+            return ValueTask.CompletedTask;
+
         var offset = buffer.Offset;
         
         buffer.Read(ref offset, out int len_interfaceCode);
@@ -84,20 +87,20 @@ public class {1}Processor : INetXClientProcessor
 
             await _serviceProxies[interfaceCode][methodCode](client, message, offset);
         }}, cancellationToken);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }}
 
-    public int GetReceiveMessageSize(INetXClientSession client, in ArraySegment<byte> buffer)
+    public int GetReceiveMessageSize(INetXClientSession client, in ReadOnlyMemory<byte> buffer)
     {{
         throw new NotImplementedException();
     }}
 
-    public void ProcessReceivedBuffer(INetXClientSession client, in ArraySegment<byte> buffer)
+    public void ProcessReceivedBuffer(INetXClientSession client, in ReadOnlyMemory<byte> buffer)
     {{
         
     }}
 
-    public void ProcessSendBuffer(INetXClientSession client, in ArraySegment<byte> buffer)
+    public void ProcessSendBuffer(INetXClientSession client, in ReadOnlyMemory<byte> buffer)
     {{
         
     }}

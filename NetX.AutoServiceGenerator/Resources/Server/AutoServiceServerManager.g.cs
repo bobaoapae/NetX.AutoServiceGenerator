@@ -4,8 +4,9 @@ using NetX.Options;
 using Microsoft.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NetX.AutoServiceGenerator.Definitions;
 using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
+using NetX.AutoServiceGenerator.Definitions;
 
 namespace {0};
 

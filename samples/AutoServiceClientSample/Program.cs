@@ -24,7 +24,7 @@ public class Program
         var serviceManager = new AutoServiceClientManager("127.0.0.1", 2000, loggerFactory);
         await serviceManager.ConnectAsync(new IpsAuthentication
         {
-            Id = 2
+            Id = 1
         }, cancellationTokenSource.Token);
 
         Console.WriteLine($"Invoking AutoServiceServerSample.TryDoSomething(\"test\", 1000, 45, true)");

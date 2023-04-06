@@ -5,13 +5,13 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <RepositoryUrl>https://github.com/project-nevareth/NetX.AutoServiceGenerator</RepositoryUrl>
         <PackageProjectUrl>https://github.com/project-nevareth/NetX.AutoServiceGenerator</PackageProjectUrl>
-        <Version>1.2.5</Version>
+        <Version>1.2.6</Version>
         <LangVersion>11</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoSerializer.Definitions" Version="1.2.1" />
-        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.1" />
+        <PackageReference Include="AutoSerializer.Definitions" Version="3.0.0" />
+        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     </ItemGroup>
 

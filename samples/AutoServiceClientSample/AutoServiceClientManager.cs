@@ -10,15 +10,15 @@ namespace AutoServiceClientSample;
 [AutoServiceConsumer(typeof(IAutoServiceSample))]
 public partial class AutoServiceClientManager : IAutoServiceClientManager
 {
-    public Task OnConnectedAsync()
+    public ValueTask OnConnectedAsync()
     {
         Console.WriteLine("Connected");
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public Task OnDisconnectedAsync()
+    public ValueTask OnDisconnectedAsync()
     {
         Console.WriteLine("Connected");
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

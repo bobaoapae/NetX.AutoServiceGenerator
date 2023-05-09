@@ -289,6 +289,8 @@ public static class AutoServiceClientGenerator
                     autoServiceAuthenticationSessionConnect = string.Format(autoServiceAuthenticationSessionConnectResource);
                 }
 
+                var interfaceListener = autoServiceServerAuthenticationAttribute == null ? "ISessionListenerClient" : "ISessionListenerAuthenticationClient";
+
                 var autoServiceClientManagerSource = string.Format(
                     autoServiceClientManagerResource,
                     namespaceAutoServiceClientManager,
@@ -297,7 +299,8 @@ public static class AutoServiceClientGenerator
                     autoServicesServerConsumerInitializations,
                     autoServiceClientManagerUsings,
                     authenticationParameters,
-                    autoServiceAuthenticationSessionConnect);
+                    autoServiceAuthenticationSessionConnect,
+                    interfaceListener);
                 context.AddSource($"{autoServiceClientManagerName}.g.cs", SourceText.From(autoServiceClientManagerSource, Encoding.UTF8));
 
 

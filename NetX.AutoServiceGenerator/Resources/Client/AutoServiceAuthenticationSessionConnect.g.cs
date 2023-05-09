@@ -5,3 +5,4 @@
             Disconnect();
             throw new Exception($"{{_identity}}:  Authentication failed");
         }}
+        await OnAuthenticatedAsync();

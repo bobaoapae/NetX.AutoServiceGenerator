@@ -21,4 +21,10 @@ public partial class AutoServiceClientManager : IAutoServiceClientManager
         Console.WriteLine("Connected");
         return ValueTask.CompletedTask;
     }
+
+    public ValueTask OnAuthenticatedAsync()
+    {
+        Console.WriteLine("Authenticated");
+        return ValueTask.CompletedTask;
+    }
 }

@@ -11,7 +11,7 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace {0};
 
-public partial class {1} : ISessionListenerClient
+public partial class {1} : {7}
 {{
 
     private readonly RecyclableMemoryStreamManager manager;

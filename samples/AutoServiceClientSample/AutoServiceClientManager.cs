@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoServiceServerSample.Definitions;
+using NetX;
 using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceClientSample;
@@ -16,7 +17,7 @@ public partial class AutoServiceClientManager : IAutoServiceClientManager
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask OnDisconnectedAsync()
+    public ValueTask OnDisconnectedAsync(DisconnectReason reason)
     {
         Console.WriteLine("Connected");
         return ValueTask.CompletedTask;

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using AutoServiceClientSample.Definitions;
 using AutoServiceServerSample.Definitions;
+using NetX;
 using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceServerSample;
@@ -17,7 +18,7 @@ public partial class AutoServiceServerManager : IAutoServiceServerManager
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask OnSessionDisconnectAsync(AutoServiceServerManagerSession session)
+    public ValueTask OnSessionDisconnectAsync(AutoServiceServerManagerSession session, DisconnectReason reason)
     {
         Console.WriteLine($"Session Disconnected: {session.Session.Id}");
         return ValueTask.CompletedTask;

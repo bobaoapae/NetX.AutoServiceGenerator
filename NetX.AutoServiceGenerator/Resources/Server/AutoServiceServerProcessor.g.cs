@@ -20,7 +20,7 @@ public class {1}Processor : INetXServerProcessor
     public delegate bool TryGetSession(Guid guid, out {1}Session session);
     private delegate ValueTask InternalProxy({1}Session session, NetXMessage message, int offset);
     public delegate ValueTask ConnectDelegate({1}Session session);
-    public delegate ValueTask DisconnectDelegate({1}Session session);
+    public delegate ValueTask DisconnectDelegate({1}Session session, DisconnectReason reason);
 
     private readonly ConcurrentDictionary<Guid, {1}Session> _sessions;
     private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxies;
@@ -89,14 +89,14 @@ public class {1}Processor : INetXServerProcessor
         await _connectDelegate(internalSession);
     }}
 
-    public ValueTask OnSessionDisconnectAsync(Guid sessionId)
+    public ValueTask OnSessionDisconnectAsync(Guid sessionId, DisconnectReason reason)
     {{
         if(!_sessions.TryRemove(sessionId, out var session))
         {{
             _logger?.LogError("{{identity}}: Fail on remove session ({{sessionId}}) from processor session list", _identity, sessionId);
             return ValueTask.CompletedTask;
         }}
-        return _disconnectDelegate(({1}Session)session);
+        return _disconnectDelegate(({1}Session)session, reason);
     }}
 
     #pragma warning disable CS1998

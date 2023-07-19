@@ -106,7 +106,7 @@ public class {1}Processor : INetXClientProcessor
     }}
 
     #region Authentication
-    public async Task<bool> SendAuthentication(NetX.INetXClient client, IAutoSerialize ipsAuthenticationProto, System.Threading.CancellationToken cancellationToken)
+    public async Task<{7}> SendAuthentication(NetX.INetXClient client, IAutoSerialize ipsAuthenticationProto, System.Threading.CancellationToken cancellationToken)
     {{
         try
         {{
@@ -119,13 +119,13 @@ public class {1}Processor : INetXClientProcessor
             var bufferResult = await client.RequestAsync(stream, cancellationToken);
             var offset = bufferResult.Offset;
 
-            bufferResult.Read(ref offset, out bool authResult);    
+            bufferResult.Read(ref offset, out {7} authResult);    
             return authResult;
         }}
         catch(Exception ex)
         {{
             _logger?.LogError(ex, "{{identity}}: Error while sending authentication", _identity);
-            return false;
+            return new {7}();
         }}
     }}
     #endregion

@@ -2,7 +2,7 @@
 
 namespace NetX.AutoServiceGenerator.Definitions;
 
-public interface ISessionListenerAuthenticationClient : ISessionListenerClient
+public interface ISessionListenerAuthenticationClient<in T> : ISessionListenerClient where T: AutoServiceAuthenticationProto
 {
-    ValueTask OnAuthenticatedAsync();
+    ValueTask OnAuthenticatedAsync(T authenticationProto);
 }

@@ -5,7 +5,7 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceClientSample;
 
-[AutoServiceClientAuthentication<IpsAuthentication>]
+[AutoServiceClientAuthentication<IpsAuthentication, AutoServiceAuthenticationProto>]
 [AutoServiceProvider(typeof(AutoServiceReceiverSample))]
 [AutoServiceConsumer(typeof(IAutoServiceSample))]
 public partial class AutoServiceClientManager : IAutoServiceClientManager
@@ -22,7 +22,7 @@ public partial class AutoServiceClientManager : IAutoServiceClientManager
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask OnAuthenticatedAsync()
+    public ValueTask OnAuthenticatedAsync(AutoServiceAuthenticationProto authenticationProto)
     {
         Console.WriteLine("Authenticated");
         return ValueTask.CompletedTask;

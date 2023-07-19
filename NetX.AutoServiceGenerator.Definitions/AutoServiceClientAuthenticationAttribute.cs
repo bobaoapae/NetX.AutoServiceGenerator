@@ -4,7 +4,7 @@ using AutoSerializer.Definitions;
 namespace NetX.AutoServiceGenerator.Definitions;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class AutoServiceClientAuthenticationAttribute<T> : Attribute where T : IAutoSerialize,IAutoDeserialize
+public class AutoServiceClientAuthenticationAttribute<T, K> : Attribute where T : IAutoSerialize,IAutoDeserialize where K: AutoServiceAuthenticationProto
 {
 
 }

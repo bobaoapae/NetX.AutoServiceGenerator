@@ -27,7 +27,7 @@ public static class AutoServiceClientGenerator
             var autoServiceConsumerAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceConsumerAttribute");
             var autoServiceProviderAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceProviderAttribute");
             var autoServiceClientManagerInterfaceDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceClientManager");
-            var autoServiceAuthenticationAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceClientAuthenticationAttribute`1");
+            var autoServiceAuthenticationAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceClientAuthenticationAttribute`2");
 
             if (autoServiceConsumerAttributeDefinition == null || autoServiceProviderAttributeDefinition == null || autoServiceClientManagerInterfaceDefinition == null || autoServiceAuthenticationAttributeDefinition == null)
             {
@@ -289,7 +289,9 @@ public static class AutoServiceClientGenerator
                     autoServiceAuthenticationSessionConnect = string.Format(autoServiceAuthenticationSessionConnectResource);
                 }
 
-                var interfaceListener = autoServiceServerAuthenticationAttribute == null ? "ISessionListenerClient" : "ISessionListenerAuthenticationClient";
+                var genericReturnAuth = autoServiceServerAuthenticationAttribute == null ? "void" : autoServiceServerAuthenticationAttribute.AttributeClass.TypeArguments[1].ToDisplayString();
+
+                var interfaceListener = autoServiceServerAuthenticationAttribute == null ? "ISessionListenerClient" : $"ISessionListenerAuthenticationClient<{genericReturnAuth}>";
 
                 var autoServiceClientManagerSource = string.Format(
                     autoServiceClientManagerResource,
@@ -403,7 +405,7 @@ public static class AutoServiceClientGenerator
 
                 var autoServiceClientProcessorSource = string.Format(autoServiceClientManagerProcessorResource, namespaceAutoServiceClientManager, autoServiceClientManagerName, autoServiceClientProcessorDeclarations,
                     autoServiceClientProcessorInitializers, autoServiceClientProcessorLoaders,
-                    autoServiceClientProcessorProxies, autoServiceClientProcessorUsings);
+                    autoServiceClientProcessorProxies, autoServiceClientProcessorUsings, genericReturnAuth);
                 context.AddSource($"{autoServiceClientManagerName}Processor.g.cs", SourceText.From(autoServiceClientProcessorSource, Encoding.UTF8));
             }
         }

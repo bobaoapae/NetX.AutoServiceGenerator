@@ -17,7 +17,7 @@
             stream.ExWrite(internalAuthResult);
             await session.ReplyAsync(message.Id, stream, cancellationToken);
             taskCompletionSource.SetResult();
-            if(!internalAuthResult) 
+            if(!internalAuthResult.IsAuthenticated) 
             {{
                 _logger?.LogError("{{identity}}: Authentication failed for {{sessionId}}", _identity, session.Id);
                 //Some time for client read the response

@@ -3,7 +3,7 @@ using AutoSerializer.Definitions;
 
 namespace NetX.AutoServiceGenerator.Definitions;
 
-public interface IAutoServiceAuthentication<in T> where T : IAutoSerialize, IAutoDeserialize
+public interface IAutoServiceAuthentication<in T, TReturn> where T : IAutoSerialize, IAutoDeserialize where TReturn : AutoServiceAuthenticationProto
 {
-    Task<bool> AuthenticateAsync(T authenticationProto);
+    Task<TReturn> AuthenticateAsync(T authenticationProto);
 }

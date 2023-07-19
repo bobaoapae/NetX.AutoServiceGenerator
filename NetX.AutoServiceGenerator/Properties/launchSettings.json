@@ -1,0 +1,12 @@
+﻿{
+  "profiles": {
+    "AutoService.Generator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\samples\\AutoServiceClientSample\\AutoServiceClientSample.csproj"
+    },
+    "AutoService2.Generator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\samples\\AutoServiceServerSample\\AutoServiceServerSample.csproj"
+    }
+  }
+}

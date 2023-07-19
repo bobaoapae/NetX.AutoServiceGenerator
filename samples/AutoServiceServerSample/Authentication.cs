@@ -4,10 +4,13 @@ using NetX.AutoServiceGenerator.Definitions;
 
 namespace AutoServiceServerSample;
 
-public partial class Authentication : IAutoServiceAuthentication<IpsAuthentication>
+public partial class Authentication : IAutoServiceAuthentication<IpsAuthentication, AutoServiceAuthenticationProto>
 {
-    public Task<bool> AuthenticateAsync(IpsAuthentication authenticationProto)
+    public Task<AutoServiceAuthenticationProto> AuthenticateAsync(IpsAuthentication authenticationProto)
     {
-        return Task.FromResult(authenticationProto.Id == 1);
+        return Task.FromResult(new AutoServiceAuthenticationProto
+        {
+            IsAuthenticated = authenticationProto.Id == 1
+        });
     }
 }

@@ -6,5 +6,5 @@ public interface ISessionListenerClient
 {
     ValueTask OnConnectedAsync();
 
-    ValueTask OnDisconnectedAsync();
+    ValueTask OnDisconnectedAsync(DisconnectReason reason);
 }

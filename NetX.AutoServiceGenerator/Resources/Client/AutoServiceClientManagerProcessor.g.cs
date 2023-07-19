@@ -17,7 +17,7 @@ public class {1}Processor : INetXClientProcessor
 {{
     private delegate ValueTask InternalProxy(INetXClientSession client, NetXMessage message, int offset);
     public delegate ValueTask ConnectDelegate();
-    public delegate ValueTask DisconnectDelegate();
+    public delegate ValueTask DisconnectDelegate(DisconnectReason reason);
 
     private readonly Dictionary<string, Dictionary<ushort, InternalProxy>> _serviceProxies;
     
@@ -55,9 +55,9 @@ public class {1}Processor : INetXClientProcessor
         return _connectDelegate();
     }}
 
-    public ValueTask OnDisconnectedAsync()
+    public ValueTask OnDisconnectedAsync(DisconnectReason reason)
     {{
-        return _disconnectDelegate();
+        return _disconnectDelegate(reason);
     }}
 
     public ValueTask OnReceivedMessageAsync(INetXClientSession client, NetXMessage message, CancellationToken cancellationToken)

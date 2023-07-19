@@ -6,5 +6,5 @@ public interface ISessionListenerServer<T>
 {
     ValueTask OnSessionConnectAsync(T session);
 
-    ValueTask OnSessionDisconnectAsync(T session);
+    ValueTask OnSessionDisconnectAsync(T session, DisconnectReason reason);
 }

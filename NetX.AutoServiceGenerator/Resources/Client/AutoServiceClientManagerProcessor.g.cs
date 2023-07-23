@@ -63,7 +63,10 @@ public class {1}Processor : INetXClientProcessor
     public ValueTask OnReceivedMessageAsync(INetXClientSession client, NetXMessage message, CancellationToken cancellationToken)
     {{
         if(!MemoryMarshal.TryGetArray(message.Buffer, out var buffer))
-            return ValueTask.CompletedTask;
+        {{
+            message.Dispose();
+            return ValueTask.CompletedTask;   
+        }}
 
         var offset = buffer.Offset;
         
@@ -73,19 +76,22 @@ public class {1}Processor : INetXClientProcessor
 
         Task.Run(async () =>
         {{
-            if(!_serviceProxies.ContainsKey(interfaceCode))
+            using(message)
             {{
-                _logger?.LogWarning("{{identity}}: Received request to unregistered service ({{interfaceCode}})", _identity, interfaceCode);
-                return;
-            }}
+                if(!_serviceProxies.ContainsKey(interfaceCode))
+                {{
+                    _logger?.LogWarning("{{identity}}: Received request to unregistered service ({{interfaceCode}})", _identity, interfaceCode);
+                    return;
+                }}
 
-            if(!_serviceProxies[interfaceCode].ContainsKey(methodCode))
-            {{
-                _logger?.LogWarning("{{identity}}: Received invalid method ({{methodCode}}) request to service ({{interfaceCode}}) ", _identity, interfaceCode, methodCode);
-                return;
-            }}
+                if(!_serviceProxies[interfaceCode].ContainsKey(methodCode))
+                {{
+                    _logger?.LogWarning("{{identity}}: Received invalid method ({{methodCode}}) request to service ({{interfaceCode}}) ", _identity, interfaceCode, methodCode);
+                    return;
+                }}
 
-            await _serviceProxies[interfaceCode][methodCode](client, message, offset);
+                await _serviceProxies[interfaceCode][methodCode](client, message, offset);  
+            }}
         }}, cancellationToken);
         return ValueTask.CompletedTask;
     }}

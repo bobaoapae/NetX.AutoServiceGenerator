@@ -51,7 +51,6 @@ public partial class {1} : {7}
             .Processor(_processor)
             .EndPoint(_address, _port)
             .Duplex(true, socketTimeout)
-            .CopyBuffer(true)
             .NoDelay(noDelay)
             .ReceiveBufferSize(recvBufferSize)
             .SendBufferSize(sendBufferSize)

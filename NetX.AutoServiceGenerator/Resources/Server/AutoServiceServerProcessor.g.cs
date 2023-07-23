@@ -104,7 +104,10 @@ public class {1}Processor : INetXServerProcessor
     #pragma warning restore CS1998
     {{
         if(!MemoryMarshal.TryGetArray(message.Buffer, out var buffer))
+        {{
+            message.Dispose();
             return;
+        }}
 
         var offset = buffer.Offset;
         
@@ -116,6 +119,7 @@ public class {1}Processor : INetXServerProcessor
         {{
             _logger?.LogError("{{identity}}: Received request but session ({{sessionId}}) was not found on processor session list", _identity, session.Id);
             session.Disconnect();
+            message.Dispose();
             return;
         }}
 
@@ -123,19 +127,22 @@ public class {1}Processor : INetXServerProcessor
 
         _ = Task.Run(async () =>
         {{
-            if(!_serviceProxies.ContainsKey(interfaceCode))
+            using(message)
             {{
-                _logger?.LogWarning("{{identity}}: Received request to unregistered service ({{interfaceCode}})", _identity, interfaceCode);
-                return;
-            }}
+                if(!_serviceProxies.ContainsKey(interfaceCode))
+                {{
+                    _logger?.LogWarning("{{identity}}: Received request to unregistered service ({{interfaceCode}})", _identity, interfaceCode);
+                    return;
+                }}
 
-            if(!_serviceProxies[interfaceCode].ContainsKey(methodCode))
-            {{
-                _logger?.LogWarning("{{identity}}: Received invalid method ({{methodCode}}) request to service ({{interfaceCode}}) ", _identity, interfaceCode, methodCode);
-                return;
-            }}
+                if(!_serviceProxies[interfaceCode].ContainsKey(methodCode))
+                {{
+                    _logger?.LogWarning("{{identity}}: Received invalid method ({{methodCode}}) request to service ({{interfaceCode}}) ", _identity, interfaceCode, methodCode);
+                    return;
+                }}
                
-            await _serviceProxies[interfaceCode][methodCode](autoServiceSession, message, offset);
+                await _serviceProxies[interfaceCode][methodCode](autoServiceSession, message, offset);   
+            }}
         }}, cancellationToken);
     }}
 

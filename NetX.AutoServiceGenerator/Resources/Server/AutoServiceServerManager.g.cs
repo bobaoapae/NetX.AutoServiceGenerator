@@ -42,7 +42,6 @@ public partial class {1} : ISessionListenerServer<{1}Session>
             .Processor(_processor)
             .EndPoint(_address, _port)
             .Duplex(true, socketTimeout)
-            .CopyBuffer(true)
             .NoDelay(noDelay)
             .ReceiveBufferSize(recvBufferSize)
             .SendBufferSize(sendBufferSize)

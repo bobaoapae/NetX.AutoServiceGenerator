@@ -5,7 +5,7 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <RepositoryUrl>https://github.com/bobaoapae/NetX.AutoServiceGenerator</RepositoryUrl>
         <PackageProjectUrl>https://github.com/bobaoapae/NetX.AutoServiceGenerator</PackageProjectUrl>
-        <Version>2.2.1</Version>
+        <Version>2.2.2</Version>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 

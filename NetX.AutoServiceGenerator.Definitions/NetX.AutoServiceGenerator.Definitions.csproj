@@ -10,11 +10,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoSerializer" Version="3.0.2" />
-        <PackageReference Include="AutoSerializer.Definitions" Version="3.0.3" />
+        <PackageReference Include="AutoSerializer" Version="3.0.5" />
+        <PackageReference Include="AutoSerializer.Definitions" Version="3.0.4" />
         <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-        <PackageReference Include="NetX" Version="2.2.3" />
+        <PackageReference Include="NetX" Version="2.2.6" />
     </ItemGroup>
 
 </Project>

@@ -9,7 +9,7 @@ public async {2} {1}({4})
             
 {5}
 
-            var {0}_{1}_Buffer_Result = await _session.Session.RequestAsync({0}_{1}_stream);
+            var {0}_{1}_Buffer_Result = await _session.Session.RequestAsync({0}_{1}_stream, {8});
             var {0}_{1}_Buffer_Result_Offset = {0}_{1}_Buffer_Result.Offset;
 
             {0}_{1}_Buffer_Result.Read(ref {0}_{1}_Buffer_Result_Offset, out short {0}_{1}_Buffer_Result_Response_Code);

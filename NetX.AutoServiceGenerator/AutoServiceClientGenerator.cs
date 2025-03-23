@@ -28,6 +28,7 @@ public static class AutoServiceClientGenerator
             var autoServiceProviderAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceProviderAttribute");
             var autoServiceClientManagerInterfaceDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceClientManager");
             var autoServiceAuthenticationAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceClientAuthenticationAttribute`2");
+            var autoServiceTimeoutAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceTimeoutAttribute");
 
             if (autoServiceConsumerAttributeDefinition == null || autoServiceProviderAttributeDefinition == null || autoServiceClientManagerInterfaceDefinition == null || autoServiceAuthenticationAttributeDefinition == null)
             {
@@ -205,12 +206,33 @@ public static class AutoServiceClientGenerator
                     var serviceImplementations = new StringBuilder();
 
                     var methodCode = 0;
+                    var timeout = "TimeSpan.FromMilliseconds(0)";
+                    var timeoutClass = timeout;
+                    var autoServiceTimeoutInClassAttribute = autoServiceServerConsumerInterface.GetAttributes().FirstOrDefault(data => data.AttributeClass?.Name == autoServiceTimeoutAttributeDefinition.Name);
+                    if (autoServiceTimeoutInClassAttribute != null)
+                    {
+                        var timeoutValue = (int)autoServiceTimeoutInClassAttribute.NamedArguments.FirstOrDefault(arg => arg.Key == "Timeout").Value.Value;
+                        timeout = $"TimeSpan.FromMilliseconds({timeoutValue})";
+                        timeoutClass = timeout;
+                    }
+
                     foreach (var member in autoServiceServerConsumerInterface.GetMembers())
                     {
                         if (member is IMethodSymbol methodSymbol)
                         {
                             var methodReturnType = methodSymbol.ReturnType;
                             var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
+                            var autoServiceTimeoutInMethodAttribute = methodSymbol.GetAttributes().FirstOrDefault(data => data.AttributeClass?.Name == autoServiceTimeoutAttributeDefinition.Name);
+                            if (autoServiceTimeoutInMethodAttribute != null)
+                            {
+                                var timeoutValue = (int)autoServiceTimeoutInMethodAttribute.NamedArguments.FirstOrDefault(arg => arg.Key == "Timeout").Value.Value;
+                                timeout = $"TimeSpan.FromMilliseconds({timeoutValue})";
+                            }
+                            else
+                            {
+                                timeout = timeoutClass;
+                            }
+
                             var writeParameters = new StringBuilder();
                             var parameters = new StringBuilder();
                             var readResult = new StringBuilder();
@@ -270,7 +292,7 @@ public static class AutoServiceClientGenerator
                                 .Append('\t', 1)
                                 .AppendLine(string.Format(methodReturnTypeGeneric != null ? autoServiceServerConsumerMethodResource : autoServiceServerConsumerMethodResourceVoid, autoServiceServerConsumerInterface.Name, methodSymbol.Name,
                                     methodReturnType, methodReturnTypeGeneric, parameters,
-                                    writeParameters, readResult, methodCode++));
+                                    writeParameters, readResult, methodCode++, timeout));
                         }
                     }
 
@@ -351,12 +373,16 @@ public static class AutoServiceClientGenerator
 
                                 if (hasSizeProperty)
                                 {
-                                    readParameters.Append('\t', 2).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, out int len_{parameterSymbol.Name});");
-                                    readParameters.Append('\t', 2).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, in len_{parameterSymbol.Name}, out {parameterSymbol.Type} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2)
+                                        .AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, out int len_{parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2)
+                                        .AppendLine(
+                                            $"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, in len_{parameterSymbol.Name}, out {parameterSymbol.Type} {parameterSymbol.Name});");
                                 }
                                 else
                                 {
-                                    readParameters.Append('\t', 2).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, out {parameterSymbol.Type} {parameterSymbol.Name});");
+                                    readParameters.Append('\t', 2)
+                                        .AppendLine($"{implementedService.Name}_{interfaceServer.Name}_inputBuffer.Read(ref {implementedService.Name}_{interfaceServer.Name}_offset, out {parameterSymbol.Type} {parameterSymbol.Name});");
                                 }
 
                                 parameters.Append($"{parameterSymbol.Name}, ");
@@ -371,7 +397,8 @@ public static class AutoServiceClientGenerator
 
                                 if (methodReturnGenericType.ToString() == "string")
                                 {
-                                    writeResult.Append('\t', 3).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({resultVariableName} == null ? 0 : System.Text.Encoding.UTF8.GetByteCount({resultVariableName}));");
+                                    writeResult.Append('\t', 3)
+                                        .AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({resultVariableName} == null ? 0 : System.Text.Encoding.UTF8.GetByteCount({resultVariableName}));");
                                 }
                                 else if (methodReturnGenericType is IArrayTypeSymbol || AutoServiceUtils.IsList(methodReturnGenericType))
                                 {
@@ -381,7 +408,8 @@ public static class AutoServiceClientGenerator
 
                                 if (methodReturnGenericType is INamedTypeSymbol { EnumUnderlyingType: { } } nameSymbol)
                                 {
-                                    writeResult.Append('\t', 3).AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
+                                    writeResult.Append('\t', 3)
+                                        .AppendLine($"{implementedService.Name}_{interfaceServer.Name}_stream.ExWrite({(nameSymbol.EnumUnderlyingType != null ? $"({nameSymbol.EnumUnderlyingType})" : "") + resultVariableName});");
                                 }
                                 else
                                 {

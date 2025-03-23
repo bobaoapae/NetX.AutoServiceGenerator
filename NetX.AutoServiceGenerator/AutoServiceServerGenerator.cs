@@ -28,6 +28,7 @@ public static class AutoServiceServerGenerator
             var autoServiceProviderAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceProviderAttribute");
             var autoServiceServerManagerInterfaceDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.IAutoServiceServerManager");
             var autoServiceAuthenticationAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceServerAuthenticationAttribute`3");
+            var autoServiceTimeoutAttributeDefinition = compilation.GetTypeByMetadataName("NetX.AutoServiceGenerator.Definitions.AutoServiceTimeoutAttribute");
 
             if (autoServiceConsumerAttributeDefinition == null || autoServiceProviderAttributeDefinition == null || autoServiceServerManagerInterfaceDefinition == null || autoServiceAuthenticationAttributeDefinition == null)
             {
@@ -214,12 +215,31 @@ public static class AutoServiceServerGenerator
                     var serviceImplementations = new StringBuilder();
 
                     var methodCode = 0;
+                    var timeout = "TimeSpan.FromMilliseconds(0)";
+                    var timeoutClass = timeout;
+                    var autoServiceTimeoutInClassAttribute = autoServiceClientConsumerInterface.GetAttributes().FirstOrDefault(data => data.AttributeClass?.Name == autoServiceTimeoutAttributeDefinition.Name);
+                    if (autoServiceTimeoutInClassAttribute != null)
+                    {
+                        var timeoutValue = (int)autoServiceTimeoutInClassAttribute.NamedArguments.FirstOrDefault(arg => arg.Key == "Timeout").Value.Value;
+                        timeout = $"TimeSpan.FromMilliseconds({timeoutValue})";
+                        timeoutClass = timeout;
+                    }
                     foreach (var member in autoServiceClientConsumerInterface.GetMembers())
                     {
                         if (member is IMethodSymbol methodSymbol)
                         {
                             var methodReturnType = methodSymbol.ReturnType;
                             var methodReturnTypeGeneric = ((INamedTypeSymbol)methodReturnType).TypeArguments.Length > 0 ? ((INamedTypeSymbol)methodReturnType).TypeArguments[0] : null;
+                            var autoServiceTimeoutInMethodAttribute = methodSymbol.GetAttributes().FirstOrDefault(data => data.AttributeClass?.Name == autoServiceTimeoutAttributeDefinition.Name);
+                            if (autoServiceTimeoutInMethodAttribute != null)
+                            {
+                                var timeoutValue = (int)autoServiceTimeoutInMethodAttribute.NamedArguments.FirstOrDefault(arg => arg.Key == "Timeout").Value.Value;
+                                timeout = $"TimeSpan.FromMilliseconds({timeoutValue})";
+                            }
+                            else
+                            {
+                                timeout = timeoutClass;
+                            }
                             var writeParameters = new StringBuilder();
                             var parameters = new StringBuilder();
                             var readResult = new StringBuilder();
@@ -278,7 +298,7 @@ public static class AutoServiceServerGenerator
                                 .Append('\t', 1)
                                 .AppendLine(string.Format(methodReturnTypeGeneric != null ? autoServiceClientConsumerMethodResource : autoServiceClientConsumerMethodResourceVoid, autoServiceClientConsumerInterface.Name, methodSymbol.Name,
                                     methodReturnType, methodReturnTypeGeneric, parameters,
-                                    writeParameters, readResult, methodCode++));
+                                    writeParameters, readResult, methodCode++, timeout));
                         }
                     }
 

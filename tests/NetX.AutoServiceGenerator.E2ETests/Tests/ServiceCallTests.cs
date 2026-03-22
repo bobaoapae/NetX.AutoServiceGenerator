@@ -28,7 +28,7 @@ public class ServiceCallTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _ = Task.Run(() => _server.StartListening(_cts.Token));
-        await Task.Delay(500);
+        await Task.Delay(1000);
 
         _client = new E2EClientManager("127.0.0.1", _port);
         await _client.ConnectAsync(new TestAuthProto { UserId = 1, Token = "valid" }, _cts.Token);

@@ -21,7 +21,7 @@ public class AuthenticationFlowTests : IDisposable
         _cts = new CancellationTokenSource();
         _server = new E2EServerManager("127.0.0.1", _port);
         _serverTask = Task.Run(() => _server.StartListening(_cts.Token));
-        Thread.Sleep(500);
+        Thread.Sleep(1000);
     }
 
     public void Dispose()

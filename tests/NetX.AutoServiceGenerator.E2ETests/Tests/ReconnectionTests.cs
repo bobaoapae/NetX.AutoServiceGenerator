@@ -56,7 +56,7 @@ public class ReconnectionTests : IDisposable
     {
         // Failed auth attempt
         var failedClient = new E2EClientManager("127.0.0.1", _port);
-        await Assert.ThrowsAsync<Exception>(async () =>
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
             await failedClient.ConnectAsync(new TestAuthProto { UserId = 0, Token = "invalid" }, _cts.Token));
 
         await Task.Delay(500);

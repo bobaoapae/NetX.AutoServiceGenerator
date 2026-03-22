@@ -31,4 +31,6 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
     - name: Publish
-      run: dotnet nuget push "npkg/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source github --skip-duplicate
+      run: dotnet nuget push "npkg/*.nupkg" --api-key "$NUGET_KEY" --source github --skip-duplicate
+      env:
+        NUGET_KEY: ${{ secrets.GITHUB_TOKEN }}

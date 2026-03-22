@@ -17,9 +17,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
-        source-url: https://nuget.pkg.github.com/bobaoapae/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Cache
       uses: actions/cache@v4
       with:
@@ -27,9 +24,11 @@ jobs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
+    - name: Add GitHub Packages Source
+      run: dotnet nuget add source https://nuget.pkg.github.com/bobaoapae/index.json -n github -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
     - name: Build with dotnet
       run: dotnet build --configuration Release --property:PackageOutputPath=../npkg
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
     - name: Publish
-      run: dotnet nuget push "npkg/*.nupkg" -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/bobaoapae/index.json --skip-duplicate
+      run: dotnet nuget push "npkg/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source github --skip-duplicate

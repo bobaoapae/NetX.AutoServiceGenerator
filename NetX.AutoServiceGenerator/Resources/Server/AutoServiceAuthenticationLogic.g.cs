@@ -25,7 +25,15 @@
                     session.Disconnect();
                     return;
                 }}
+                autoServiceSession.IsAuthenticated = true;
                 _logger?.LogInformation("{{identity}}: Authentication succeeded for {{sessionId}}", _identity, session.Id);
-                return;   
+                return;
             }}
+        }}
+        else if(!autoServiceSession.IsAuthenticated)
+        {{
+            _logger?.LogWarning("{{identity}}: Received request from unauthenticated session ({{sessionId}}), disconnecting", _identity, session.Id);
+            session.Disconnect();
+            message.Dispose();
+            return;
         }}

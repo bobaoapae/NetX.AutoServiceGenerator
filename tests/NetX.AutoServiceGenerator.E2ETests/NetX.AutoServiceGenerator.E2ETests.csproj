@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference OutputItemType="Analyzer" ReferenceOutputAssembly="false"
+                          Include="..\..\NetX.AutoServiceGenerator\NetX.AutoServiceGenerator.csproj" />
+        <ProjectReference Include="..\NetX.AutoServiceGenerator.E2ETests.Definitions\NetX.AutoServiceGenerator.E2ETests.Definitions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NetX" Version="2.4.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+    </ItemGroup>
+
+</Project>

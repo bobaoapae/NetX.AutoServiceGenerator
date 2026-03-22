@@ -18,6 +18,7 @@ public partial class {1}Session
     #endregion
     
     public INetXSession Session {{ get; }}
+    public bool IsAuthenticated {{ get; internal set; }}
     private readonly ILogger _logger;
 
     public {1}Session(INetXSession session, ILogger logger, RecyclableMemoryStreamManager streamManager)

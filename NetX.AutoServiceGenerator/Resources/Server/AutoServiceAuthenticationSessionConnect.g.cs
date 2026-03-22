@@ -19,8 +19,8 @@
                                                 _logger?.LogError("{{identity}}: Cannot remove task completion for MessageId = {{msgId}}", _identity, session.Id);
                                             }}
                                             
-                                            _logger?.LogError("{{identity}}: Timeout on authentication for session ({{sessionId}})", _identity, session.Id);                                    
-
+                                            _logger?.LogError("{{identity}}: Timeout on authentication for session ({{sessionId}})", _identity, session.Id);
+                                            _sessions.TryRemove(session.Id, out var ___);
                                             session.Disconnect();
                                         }}, cancellationToken);
                         

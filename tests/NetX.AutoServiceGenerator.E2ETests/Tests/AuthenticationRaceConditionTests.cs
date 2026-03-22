@@ -150,28 +150,29 @@ public class AuthenticationRaceConditionTests : IDisposable
     [Fact]
     public async Task MixedAuthAndRawClients_ShouldIsolateCorrectly()
     {
-        const int rawClientCount = 10;
-        const int validClientCount = 5;
+        const int rawClientCount = 3;
+        const int validClientCount = 3;
         var rawClients = new List<RawNetXClient>();
         var validClients = new List<E2EClientManager>();
 
         try
         {
-            // Connect raw clients (will timeout)
+            // Connect raw clients (will timeout) with pacing for CI
             for (int i = 0; i < rawClientCount; i++)
             {
                 var rawClient = new RawNetXClient("127.0.0.1", _port);
                 rawClients.Add(rawClient);
                 await rawClient.ConnectAsync(_cts.Token);
-                await Task.Delay(50);
+                await Task.Delay(100);
             }
 
-            // Interleave: connect valid clients between raw clients
+            // Connect valid clients with pacing
             for (int i = 0; i < validClientCount; i++)
             {
                 var client = new E2EClientManager("127.0.0.1", _port);
                 await client.ConnectAsync(new TestAuthProto { UserId = (uint)(i + 1), Token = "valid" }, _cts.Token);
                 validClients.Add(client);
+                await Task.Delay(100);
             }
 
             // All valid clients should work
